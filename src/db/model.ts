@@ -12,6 +12,7 @@ export const UserModelSchema = {
   },
   loginStatus: {
     type: DataTypes.INTEGER,
+    defaultValue: 1,
   },
 };
 
