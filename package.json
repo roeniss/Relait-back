@@ -1,11 +1,11 @@
 {
-  "name": "side-project-CoffeeSeatSharing",
+  "name": "coffee-seat-sharing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --watch src --delay 1 --exec 'ts-node' src/www.ts",
+    "start": "cross-env NODE_ENV=local nodemon --delay 1000 --watch src --delay 1 --exec 'ts-node' src/www.ts",
     "build": "webpack --config webpack.config.js"
   },
   "keywords": [],
@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.2",
+    "@types/jsonwebtoken": "^8.3.8",
     "express": "^4.17.1",
     "nodemon": "^2.0.2",
     "source-map-support": "^0.5.16",
@@ -20,5 +21,12 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.0",
+    "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.1.0",
+    "sequelize": "^5.21.5"
   }
 }
