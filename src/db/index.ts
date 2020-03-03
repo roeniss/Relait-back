@@ -17,7 +17,6 @@ class Database {
     const DB_REMOTE_USERNAME = process.env.DB_REMOTE_USERNAME || "ubuntu";
     const DB_USER = process.env.DB_USER || "root";
     const PEM = process.env.DB_PEM || "";
-    const cCA = fs.readFileSync(path.join(__dirname, PEM));
 
     this.sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
       host: "localhost",
@@ -29,6 +28,7 @@ class Database {
     this.BookModel = this.sequelize.define("Book", BookModelSchema);
 
     if (process.env.NODE_ENV === "local") {
+      const cCA = fs.readFileSync(path.join(__dirname, PEM));
       const tunnelSshConfig = {
         username: DB_REMOTE_USERNAME,
         host: DB_REMOTE_HOST,
