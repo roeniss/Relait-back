@@ -1,4 +1,5 @@
 import "source-map-support/register"; // for source-map
+import "../env";
 import App from "./App";
 import * as express from "express";
 
