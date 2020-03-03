@@ -23,7 +23,6 @@ class App {
     this.app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
       const env = process.env.NODE_ENV;
       if (env === "local" || env === "development") {
-        console.log(err);
         res.status(500).send(err instanceof Object ? JSON.stringify(err) : err);
       } else {
         res.sendStatus(500);
