@@ -1,5 +1,16 @@
-node_modules
+# modules
+node_modules/
 
+# environment variables
 .env*
 
+# log files
+log/
+
+# server access key
 *.pem
+*.ppk
+
+# OS
+.DS_Store
+
