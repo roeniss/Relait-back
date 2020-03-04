@@ -1,4 +1,4 @@
 import errorHandling from "./errorHandling";
-import logging from "./logging";
+import customLogger from "./customLogger";
 
-export { errorHandling, logging };
+export { errorHandling, customLogger };

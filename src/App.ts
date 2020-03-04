@@ -1,8 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { errorHandling, logging } from "./milddlewares";
-
+import { errorHandling, customLogger } from "./milddlewares";
 import Routers from "./routes/index";
 
 class App {
@@ -11,7 +10,7 @@ class App {
   constructor() {
     this.app = express();
 
-    this.app.use(logging);
+    this.app.use(customLogger());
     this.app.use(cors());
     this.app.use(bodyParser.json());
 
