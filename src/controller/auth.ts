@@ -1,36 +1,41 @@
-// TODO: JWT는 나중에 파일 분리
-import * as jwt from "jsonwebtoken";
 import DB from "../db";
+import { User, makeJwt, Jwt } from "../lib/helper";
+import { UserSchema } from "../db/schema";
 
-const mockUser = { vender: "1", uniqueId: "1234567890" };
+export const login = async (user: User): Promise<Jwt | null> => {
+  try {
+    const condition: object = {
+      where: {
+        vender: user.vender,
+        uniqueId: user.uniqueId,
+      },
+    };
+    // TODO: 이거 왜 type check 안돼? (findAll)
+    const loginUser: UserSchema | null = await DB.UserModel.findOne(condition);
+    if (!loginUser) return null;
 
-const AuthController = {
-  login: async (vender: string, uniqueId: string): Promise<string> => {
-    // TODO: 인풋 유효성 검증..?
-    const users = await DB.findUser(vender, uniqueId);
-
-    // TODO: process.env 별도 분리
-    const JWT_SECRET = process.env.JWT_SECRET || "";
-    if (!!users.length) {
-      // 기존 유저 --> 토큰 제공
-      const user = users[0];
-      const { id, nickname } = user;
-      const payload = { id, nickname };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "14d" });
-      return token;
-    } else {
-      return "";
-    }
-  },
-  signup: async (vender: string, uniqueId: string, nickname: string): Promise<string> => {
-    const user = await DB.createUser(vender, uniqueId, nickname);
-    const { id /*,nickname*/ } = user;
-    // TODO: process.env 별도 분리
-    const JWT_SECRET = process.env.JWT_SECRET || "";
-    const payload = { id, nickname };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "14d" });
+    // If the user exist, then:
+    const token: Jwt = makeJwt(loginUser);
     return token;
-  },
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
-export default AuthController;
+export const signup = async (user: User): Promise<Jwt | null> => {
+  try {
+    const condition = {
+      vender: user.vender,
+      uniqueId: user.uniqueId,
+      nickname: user.nickname || "익명",
+    };
+    // TODO: create에 대하여, 위 findAll과 같은 물음
+    const newUser: UserSchema = await DB.UserModel.create(condition);
+    const token: Jwt = makeJwt(newUser);
+    return token;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};

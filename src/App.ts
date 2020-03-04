@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { errorHandling, customLogger } from "./milddlewares";
-import Routers from "./routes/index";
+import routers from "./routes";
 
 class App {
   public app: express.Application;
@@ -15,7 +15,7 @@ class App {
     this.app.use(bodyParser.json());
 
     // 전체 총괄 라우팅
-    this.app.use("/", Routers);
+    this.app.use("/", routers);
 
     // 모든 에러는 이쪽으로 모인다
     this.app.use(errorHandling);

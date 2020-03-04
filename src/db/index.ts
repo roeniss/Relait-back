@@ -1,110 +1,181 @@
-import { Sequelize, Model } from "sequelize";
-import fs from "fs";
+import { Sequelize, Model, DataTypes } from "sequelize";
+import fs, { exists } from "fs";
 import path from "path";
 import tunnel from "tunnel-ssh";
-import { UserModelSchema, SeatModelSchema, BookModelSchema } from "./model";
+import dbConfig from "./config";
+import { UserSchema, SeatSchema } from "./schema";
+import { User } from "../lib/helper";
 
 class Database {
   private sequelize: Sequelize;
-  private UserModel: any; // TODO: Model로 해야될 것 같은데 에러남
-  private SeatModel: any;
-  private BookModel: any;
+  public UserModel: UserSchema;
+  public SeatModel: SeatSchema;
 
   constructor() {
-    const DB_NAME = process.env.DB_NAME || "db";
-    const DB_PASSWORD = process.env.DB_PASSWORD || "";
-    const DB_REMOTE_HOST = process.env.DB_REMOTE_HOST || "localhost";
-    const DB_REMOTE_USERNAME = process.env.DB_REMOTE_USERNAME || "ubuntu";
-    const DB_USER = process.env.DB_USER || "root";
-    const PEM = process.env.DB_PEM || "";
+    const { DB_NAME, DB_PASSWORD, DB_HOST, DB_USER } = dbConfig;
 
     this.sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-      host: "localhost",
+      host: DB_HOST,
       dialect: "mysql",
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+      },
     });
 
-    this.UserModel = this.sequelize.define("User", UserModelSchema);
-    this.SeatModel = this.sequelize.define("Seat", SeatModelSchema);
-    this.BookModel = this.sequelize.define("Book", BookModelSchema);
+    this.UserModel = this.defineUserModel();
+    this.SeatModel = this.defineSeatModel();
 
-    if (process.env.NODE_ENV === "local") {
-      const cCA = fs.readFileSync(path.join(__dirname, PEM));
-      const tunnelSshConfig = {
-        username: DB_REMOTE_USERNAME,
-        host: DB_REMOTE_HOST,
-        port: 22,
-        dstHost: "127.0.0.1",
-        dstPort: 3306,
-        localHost: "127.0.0.1",
-        localPort: 3306,
-        privateKey: cCA,
-      };
-
-      tunnel(tunnelSshConfig, async (error: Error, server: any) => {
-        if (error) {
-          console.error("[SSH Tunnel] FAIL :", error);
-        } else {
-          console.log("[SSH Tunnel] SUCCESS");
-          await this.testConnect();
-          await this.syncModel();
-        }
-      });
-    } else {
-      console.log("[SSH Tunnel] SUCCESS");
-      (async () => {
-        await this.testConnect();
-        await this.syncModel();
-      })();
-    }
+    this.connectDatabase();
   }
 
-  private async testConnect() {
+  private async connectDatabase(): Promise<void> {
+    const { DB_REMOTE_HOST, DB_REMOTE_USERNAME, DB_PEM } = dbConfig;
+
+    // if (process.env.NODE_ENV === "local") {
+    //   const cCA: Buffer = fs.readFileSync(path.join(__dirname, DB_PEM));
+    //   const tunnelSshConfig: Object = {
+    //     username: DB_REMOTE_USERNAME,
+    //     host: DB_REMOTE_HOST,
+    //     port: 22,
+    //     dstHost: "127.0.0.1",
+    //     dstPort: 3306,
+    //     localHost: "127.0.0.1",
+    //     localPort: 3306,
+    //     privateKey: cCA,
+    //   };
+
+    //   await tunnel(tunnelSshConfig, (error: Error, server: any): void => {
+    //     if (error) {
+    //       console.error("[SSH Tunnel] FAIL :", error);
+    //       throw new Error("SSH Tunneling fail");
+    //     }
+    //   });
+    // }
+    console.log("[SSH Tunnel] SUCCESS");
+    await this.testConnect();
+    await this.syncModel();
+  }
+
+  private async testConnect(): Promise<void> {
     try {
       await this.sequelize.authenticate();
-      console.log("[Sequelize] Connection SUCCESS");
+      console.log("[Sequelize] Connection test SUCCESS");
     } catch (error) {
-      console.error("[Sequelize] Connection FAIL :", error);
+      console.error("[Sequelize] Connection test FAIL :", error);
+      process.exit(1);
     }
   }
+  private defineUserModel(): UserSchema {
+    return UserSchema.init(
+      // TODO: schema가 전혀 강제를 못해주고 있는 것 같다. 뭘 잘못 한거지?
+      {
+        id: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        nickname: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        vender: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        uniqueId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        loginStatus: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+      },
+      {
+        tableName: "User",
+        sequelize: this.sequelize,
+      }
+    );
+  }
+  private defineSeatModel(): SeatSchema {
+    // TODO: defineUserModel의 TODO와 같음
+    return SeatSchema.init(
+      {
+        id: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        address: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        geoLocation: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        leaveAt: {
+          type: DataTypes.DATE,
+          allowNull: false,
+        },
+        userId: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: false,
+        },
+        havePlug: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+        },
+        seatStatus: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        descriptionGiver: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        descriptionSeat: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        descriptionWorktime: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        thumbnail: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        bookUserId: {
+          type: DataTypes.INTEGER.UNSIGNED,
+          allowNull: true,
+        },
+        bookedAt: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+      },
+      {
+        tableName: "Seat",
+        sequelize: this.sequelize,
+      }
+    );
+  }
 
-  private async syncModel() {
+  private async syncModel(): Promise<void> {
     try {
-      await this.UserModel.sync();
-      await this.SeatModel.sync();
-      await this.BookModel.sync();
-
+      await this.UserModel.sync({ force: false });
+      await this.SeatModel.sync({ force: false });
       console.log("[Sequelize] Model sync SUCCESS");
     } catch (error) {
       console.error("[Sequelize] Model sync FAIl :", error);
-    }
-  }
-
-  public async findUser(vender: string, uniqueId: string) {
-    try {
-      const user = await this.UserModel.findAll({
-        where: {
-          vender,
-          uniqueId,
-        },
-      });
-      return user;
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-  public async createUser(vender: string, uniqueId: string, nickname: string) {
-    try {
-      const user = await this.UserModel.create({
-        vender,
-        uniqueId,
-        nickname,
-      });
-      return user;
-    } catch (error) {
-      throw new Error(error);
+      process.exit(1);
     }
   }
 }
 
-const DB = new Database();
+const DB: Database = new Database();
 export default DB;
