@@ -28,14 +28,17 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "@types/app-root-path": "^1.2.4",
     "@types/cors": "^2.8.6",
     "@types/morgan": "^1.9.0",
+    "app-root-path": "^3.0.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.0",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1",
     "mysql2": "^2.1.0",
+    "rotating-file-stream": "^2.0.2",
     "sequelize": "^5.21.5",
     "ts-node": "^8.6.2",
     "tunnel-ssh": "^4.1.4"
