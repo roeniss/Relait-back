@@ -1,5 +1,5 @@
 import "source-map-support/register"; // for source-map
-import "../env";
+import "../env"; // dotenv root
 import App from "./App";
 import * as express from "express";
 
