@@ -13,7 +13,7 @@ export interface User {
   nickname?: string;
 }
 
-interface JwtPayload {
+export interface JwtPayload {
   id: number;
   nickname: string;
   iat?: number;
@@ -35,7 +35,7 @@ export const makeJwt = (user: UserSchema): Jwt => {
   return token;
 };
 
-const isObj = (target: any): boolean => typeof target === "object" && target !== null;
+export const isObj = (target: any): boolean => typeof target === "object" && target !== null;
 
 export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
   try {
@@ -45,7 +45,7 @@ export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
     if (!isObj(resultToken)) return null;
     const payload = <JwtPayload>resultToken;
     const curTime = new Date().getDate() / 1000;
-    if (payload.exp && payload.exp - curTime > 0) return { id: 1, nickname: "2" };
+    if (payload.exp && payload.exp - curTime > 0) return payload;
     else null;
   } catch (error) {
     console.error(error);
