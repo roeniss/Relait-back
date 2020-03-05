@@ -29,6 +29,7 @@ export class UserSchema extends Model {
   public vender!: Vender;
   public uniqueId!: string;
   public loginStatus!: LoginStatus;
+  public readonly withrawedAt!: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;

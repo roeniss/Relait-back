@@ -89,6 +89,10 @@ class Database {
           type: DataTypes.INTEGER,
           allowNull: true,
         },
+        withrawedAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
       },
       {
         tableName: "User",
@@ -163,8 +167,8 @@ class Database {
 
   private async syncModel(): Promise<void> {
     try {
-      await this.UserModel.sync({ force: false });
-      await this.SeatModel.sync({ force: false });
+      await this.UserModel.sync({ alter: true, force: false });
+      await this.SeatModel.sync({ alter: true, force: false });
       console.log("[Sequelize] Model sync SUCCESS");
     } catch (error) {
       console.error("[Sequelize] Model sync FAIl :", error);
