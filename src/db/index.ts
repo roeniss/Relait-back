@@ -1,10 +1,6 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
-import fs, { exists } from "fs";
-import path from "path";
-import tunnel from "tunnel-ssh";
 import dbConfig from "./config";
 import { UserSchema, SeatSchema } from "./schema";
-import { User } from "../lib/helper";
 
 class Database {
   private sequelize: Sequelize;
