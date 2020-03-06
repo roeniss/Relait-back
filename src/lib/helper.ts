@@ -40,6 +40,7 @@ export const makeJwt = (user: UserSchema): Jwt => {
 export const isObj = (target: any): boolean => typeof target === "object" && target !== null;
 
 export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
+  console.log(token);
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) throw new Error("No JWT Secret");
@@ -50,7 +51,7 @@ export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
     if (payload.exp && payload.exp - curTime > 0) return payload;
     else null;
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return null;
   }
   return null;
