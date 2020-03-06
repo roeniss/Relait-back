@@ -55,3 +55,19 @@ export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
   }
   return null;
 };
+interface ErrorObject {
+  name: string;
+  message: string;
+  stack?: string;
+}
+export const errorToString = (value: Error | string) => {
+  if (value instanceof Error) {
+    const container: ErrorObject = { name: "", message: "", stack: "" };
+    container["name"] = value.name;
+    container["message"] = value.message;
+    container["stack"] = value.stack || "";
+    return JSON.stringify(container);
+  } else {
+    value;
+  }
+};
