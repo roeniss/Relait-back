@@ -5,7 +5,7 @@ export const enum Vender {
   "Email",
   "Naver",
 }
-export const enum LoginStatus {
+export const enum userStatus {
   "EmailNotChecked",
   "Active",
   "Withdrawed",
@@ -28,7 +28,7 @@ export class UserSchema extends Model {
   public nickname!: string | null; // '!' == Definite Assignment Assertions
   public vender!: Vender;
   public uniqueId!: string;
-  public loginStatus!: LoginStatus;
+  public userStatus!: userStatus;
   public readonly withrawedAt!: Date;
 
   public readonly createdAt!: Date;

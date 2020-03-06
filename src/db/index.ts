@@ -85,9 +85,10 @@ class Database {
           type: DataTypes.STRING,
           allowNull: true,
         },
-        loginStatus: {
+        userStatus: {
           type: DataTypes.INTEGER,
           allowNull: true,
+          defaultValue: "1",
         },
         withrawedAt: {
           type: DataTypes.DATE,

@@ -16,7 +16,7 @@ export interface User {
 export interface JwtPayload {
   id: number;
   nickname: string;
-  loginStatus: number;
+  userStatus: number;
   iat?: number;
   exp?: number;
 }
@@ -29,7 +29,7 @@ export const makeJwt = (user: UserSchema): Jwt => {
   const payload: JwtPayload = {
     id: user.id,
     nickname: user.nickname || "익명",
-    loginStatus: user.loginStatus,
+    userStatus: user.userStatus,
   };
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) throw new Error("No JWT Secret");
