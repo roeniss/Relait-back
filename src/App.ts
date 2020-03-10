@@ -1,5 +1,4 @@
 import express from "express";
-import bodyParser from "body-parser";
 import cors from "cors";
 import { errorHandling, customLogger } from "./milddlewares";
 import routers from "./routes";
@@ -13,7 +12,7 @@ class App {
     // 공통 미들웨어들
     this.app.use(customLogger());
     this.app.use(cors());
-    this.app.use(bodyParser.json());
+    this.app.use(express.json());
 
     // 라우팅
     this.app.use("/", routers);
