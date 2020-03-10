@@ -1,10 +1,19 @@
-export default {
-  DB_NAME: process.env.DB_NAME || "",
-  DB_PASSWORD: process.env.DB_PASSWORD || "",
-  DB_HOST: process.env.DB_HOST || "",
-  DB_DIALECT: process.env.DB_DIALECT || "mysql",
-  DB_USER: process.env.DB_USER || "",
-  DB_PEM: process.env.DB_PEM || ".",
-  DB_REMOTE_HOST: process.env.DB_REMOTE_HOST || "",
-  DB_REMOTE_USERNAME: process.env.DB_REMOTE_USERNAME || "",
+const DB_NAME: string = process.env.DB_NAME || "";
+const DB_PASSWORD: string = process.env.DB_PASSWORD || "";
+const DB_HOST: string = process.env.DB_HOST || "";
+const DB_DIALECT: string = process.env.DB_DIALECT || "";
+const DB_USER: string = process.env.DB_USER || "";
+
+console.log(DB_NAME, DB_PASSWORD, DB_HOST, DB_DIALECT, DB_USER);
+const dbOptions = {
+  host: DB_HOST,
+  dialect: DB_DIALECT,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
 };
+
+export { DB_NAME, DB_PASSWORD, DB_USER, dbOptions };
