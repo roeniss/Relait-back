@@ -2,14 +2,18 @@ import * as express from "express";
 import * as AuthController from "../controller/auth";
 import { User } from "../db";
 import { Jwt } from "../lib/helper";
-import { checkLoginInput, checkSignupInput, checkDeleteInput } from "../milddlewares/vaildation";
+import { checkLoginInput, checkIsUser } from "../milddlewares/vaildation";
 
 const router: express.Router = express.Router();
 
 router.post(
   "/login",
   checkLoginInput,
-  async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<express.Response | void> => {
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<express.Response | void> => {
     try {
       const user: User = req.body;
       const JWT: Jwt = await AuthController.login(user);
@@ -20,15 +24,17 @@ router.post(
   }
 );
 
-// TODO: 이 아래는 검토가 필요함
 router.delete(
   "/",
-  checkDeleteInput,
-  async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<express.Response | void> => {
+  checkIsUser,
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<express.Response | void> => {
     try {
-      const token: Jwt = req.body.JWT;
-      if (!token) return res.sendStatus(404);
-      const deletedUser: number | null = await AuthController.withdraw(token);
+      const token: Jwt = req.body["JWT"];
+      const deletedUser: number = await AuthController.withdraw(token);
       if (deletedUser) return res.sendStatus(204);
       else throw new Error("Fail to delete the user");
     } catch (e) {

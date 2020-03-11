@@ -4,7 +4,6 @@ const DB_HOST: string = process.env.DB_HOST || "";
 const DB_DIALECT: string = process.env.DB_DIALECT || "";
 const DB_USER: string = process.env.DB_USER || "";
 
-console.log(DB_NAME, DB_PASSWORD, DB_HOST, DB_DIALECT, DB_USER);
 const dbOptions = {
   host: DB_HOST,
   dialect: DB_DIALECT,

@@ -1,6 +1,24 @@
 import * as jwt from "jsonwebtoken";
 import { User } from "../db";
 
+/**
+ * Descypt JSON web token using string, then return object if valid otherwise null, which mean token invalid
+ * (Invalid token example: modified, expired)
+ *
+ */
+export const decryptJwt = (jwonwebtoken: Jwt): JwtPayload => {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) throw new Error("No JWT Secret");
+    const payload: JwtPayload = <JwtPayload>jwt.verify(jwonwebtoken, jwtSecret);
+    return payload;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// TODO: 이 아래는 확인 요망
+
 // for type validation
 export interface Invaild {
   errorMessage: string;
@@ -24,28 +42,14 @@ export const makeJwt = (user: User): Jwt => {
   };
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) throw new Error("No JWT Secret");
-  const token = jwt.sign(payload, jwtSecret, { expiresIn: process.env.JWT_EXPIRE || "14d" });
+  const expire = process.env.JWT_EXPIRE;
+  if (!expire) throw new Error("No expire date environment variable");
+  const token = jwt.sign(payload, jwtSecret, { expiresIn: process.env.JWT_EXPIRE });
   return token;
 };
 
 export const isObj = (target: any): boolean => typeof target === "object" && target !== null;
 
-export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
-  try {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) throw new Error("No JWT Secret");
-    const resultToken: string | object = jwt.verify(token, jwtSecret);
-    if (!isObj(resultToken)) return null;
-    const payload = <JwtPayload>resultToken;
-    const curTime = new Date().getDate() / 1000;
-    if (payload.exp && payload.exp - curTime > 0) return payload;
-    else null;
-  } catch (error) {
-    // console.error(error);
-    return null;
-  }
-  return null;
-};
 interface ErrorObject {
   name: string;
   message: string;
