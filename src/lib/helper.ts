@@ -1,22 +1,14 @@
 import * as jwt from "jsonwebtoken";
-import { UserSchema } from "../db/schema";
+import { User } from "../db";
 
 // for type validation
 export interface Invaild {
   errorMessage: string;
 }
 
-// common types
-export interface User {
-  vender: number;
-  uniqueId: string;
-  nickname?: string;
-}
-
 export interface JwtPayload {
   id: number;
-  nickname: string;
-  loginStatus: number;
+  userStatus: number;
   iat?: number;
   exp?: number;
 }
@@ -25,11 +17,10 @@ export type Jwt = string;
 
 export const isDev = (env: string | undefined): boolean => (!env || env !== "production" ? true : false);
 
-export const makeJwt = (user: UserSchema): Jwt => {
+export const makeJwt = (user: User): Jwt => {
   const payload: JwtPayload = {
     id: user.id,
-    nickname: user.nickname || "익명",
-    loginStatus: user.loginStatus,
+    userStatus: user.userStatus,
   };
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) throw new Error("No JWT Secret");
@@ -40,7 +31,6 @@ export const makeJwt = (user: UserSchema): Jwt => {
 export const isObj = (target: any): boolean => typeof target === "object" && target !== null;
 
 export const getDataFromJwt = (token: Jwt): JwtPayload | null => {
-  console.log(token);
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) throw new Error("No JWT Secret");
@@ -72,3 +62,11 @@ export const errorToString = (value: Error | string) => {
     value;
   }
 };
+
+export const isNumber = (value: string | number): boolean => {
+  return value != null && value !== "" && !isNaN(Number(value.toString()));
+};
+
+export interface Seat {
+  string: number;
+}

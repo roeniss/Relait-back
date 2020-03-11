@@ -1,15 +1,14 @@
 import * as express from "express";
-import { isObj, getDataFromJwt } from "../lib/helper";
+import { isObj, getDataFromJwt, JwtPayload } from "../lib/helper";
 import fetch, { FetchError, Response as FetchResponse } from "node-fetch";
 
 export const checkLoginInput = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
-  const data: any = req.body;
-  // 422: "이 응답은 서버가 요청을 이해하고 요청 문법도 올바르지만 요청된 지시를 따를 수 없음을 나타냅니다." https://developer.mozilla.org/ko/docs/Web/HTTP/Status/422
-  if (!isObj(data)) return res.sendStatus(422);
-  else if (!data.uniqueId || !data.vender || Object.getOwnPropertyNames(data).length != 2) return res.sendStatus(422);
-  else return next();
+  const inputData: any = req.body;
+  if (!inputData["uniqueId"] || !inputData["vender"]) return res.sendStatus(422);
+  return next();
 };
 
+// TODO: 이 아래는 검토가 필요함
 export const checkSignupInput = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
   const data: any = req.body;
   if (!isObj(data)) return res.sendStatus(422);
@@ -39,5 +38,14 @@ export const checkDeleteInput = (req: express.Request, res: express.Response, ne
   if (!isObj(data)) return res.sendStatus(422);
   else if (!data.JWT || Object.getOwnPropertyNames(data).length != 1) return res.sendStatus(422);
   else if (!getDataFromJwt(data.JWT)) return res.sendStatus(422);
+  else return next();
+};
+
+export const checkUser = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
+  const data: any = req.body;
+  if (!isObj(data)) return res.sendStatus(422);
+  const jwtPayload: JwtPayload | null = getDataFromJwt(data.JWT);
+  if (!jwtPayload) return res.sendStatus(422);
+  else if (jwtPayload.userStatus != 1) return res.sendStatus(403);
   else return next();
 };

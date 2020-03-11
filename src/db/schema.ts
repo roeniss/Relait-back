@@ -1,40 +1,46 @@
-const { Model } = require("sequelize");
+import { Sequelize, Model, DataTypes } from "sequelize";
 
-export const enum Vender {
-  "Kakao",
-  "Email",
-  "Naver",
-}
-export const enum LoginStatus {
-  "EmailNotChecked",
-  "Active",
-  "Withdrawed",
-  "Deactive",
-}
-export const enum SeatStatus {
-  "Deactive",
-  "Available",
-  "Reserved",
-}
-export const enum BookStatus {
-  "Deactive",
-  "Available",
-  "Reserved",
-}
-
-export class UserSchema extends Model {
+export class User extends Model {
   public id!: number;
 
-  public nickname!: string | null; // '!' == Definite Assignment Assertions
-  public vender!: Vender;
+  public vender!: number;
   public uniqueId!: string;
-  public loginStatus!: LoginStatus;
-  public readonly withrawedAt!: Date;
+  public userStatus!: number;
+  public readonly withdrawnAt!: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public static initialize(sequelize: Sequelize) {
+    this.init(
+      {
+        vender: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        uniqueId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        userStatus: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          defaultValue: "1",
+        },
+        withdrawnAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+      },
+      {
+        sequelize: sequelize,
+        tableName: "User",
+      }
+    );
+  }
 }
 
+// TODO: 이 아래는 확인 요망
 export class SeatSchema extends Model {
   public id!: number;
 
@@ -43,7 +49,7 @@ export class SeatSchema extends Model {
   public leaveAt!: Date;
   public userId!: number;
   public havePlug!: Boolean;
-  public seatStatus!: SeatStatus;
+  public seatStatus!: number;
 
   public descriptionGiver!: string;
   public descriptionSeat!: string;
