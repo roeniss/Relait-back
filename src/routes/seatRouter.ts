@@ -1,5 +1,5 @@
 import * as express from "express";
-import { checkUser } from "../milddlewares/vaildation";
+import { checkIsUser } from "../milddlewares/vaildation";
 import { Seat } from "../lib/helper";
 import * as SeatController from "../controller/seat";
 
