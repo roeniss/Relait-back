@@ -13,6 +13,7 @@ const dbOptions = {
     acquire: 30000,
     idle: 10000,
   },
+  logging: (...msg: any) => console.log(`[Sequelize] ${msg[0]}`),
 };
 
 export { DB_NAME, DB_PASSWORD, DB_USER, dbOptions };
