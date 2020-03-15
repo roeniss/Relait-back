@@ -6,7 +6,7 @@ export class User extends Model {
   public vender!: number;
   public uniqueId!: string;
   public userStatus!: number;
-  public readonly withdrawnAt!: Date;
+  public withdrawnAt!: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -40,25 +40,95 @@ export class User extends Model {
   }
 }
 
-// TODO: 이 아래는 확인 요망
-export class SeatSchema extends Model {
+export class Seat extends Model {
   public id!: number;
 
-  public address!: string;
-  public geoLocation!: string;
+  public giverId!: number;
   public leaveAt!: Date;
-  public userId!: number;
-  public havePlug!: Boolean;
+  public descriptionGiver!: string;
   public seatStatus!: number;
 
-  public descriptionGiver!: string;
+  public cafeName!: string;
+  public spaceKakaoMapId!: string;
+  public address!: string;
+  public geoLocation!: string;
+  public havePlug!: boolean;
+  public thumbnailUrl!: string;
   public descriptionSeat!: string;
-  public descriptionWorktime!: string;
-  public thumbnail!: string;
+  public descriptionCloseTime!: string;
 
-  public bookUserId!: number | null;
-  public bookedAt!: Date | null;
+  public takerId!: number;
+  public takenAt!: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public static initialize(sequelize: Sequelize) {
+    this.init(
+      {
+        giverId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        leaveAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        descriptionGiver: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        seatStatus: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+
+        cafeName: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        spaceKakaoMapId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        address: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        geoLocation: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        havePlug: {
+          type: DataTypes.BOOLEAN,
+          allowNull: true,
+        },
+        thumbnailUrl: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        descriptionSeat: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        descriptionCloseTime: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+
+        takerId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        takenAt: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+      },
+      {
+        sequelize: sequelize,
+        tableName: "Seat",
+      }
+    );
+  }
 }

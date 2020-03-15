@@ -1,5 +1,6 @@
 import * as jwt from "jsonwebtoken";
 import { User } from "../db";
+import moment, { Moment } from "moment";
 
 /**
  * Descypt JSON web token using string, then return object if valid otherwise null, which mean token invalid
@@ -33,7 +34,8 @@ export interface JwtPayload {
 
 export type Jwt = string;
 
-export const isDev = (env: string | undefined): boolean => (!env || env !== "production" ? true : false);
+export const isDev = (env: string | undefined): boolean =>
+  !env || env !== "production" ? true : false;
 
 export const makeJwt = (user: User): Jwt => {
   const payload: JwtPayload = {
@@ -74,3 +76,8 @@ export const isNumber = (value: string | number): boolean => {
 export interface Seat {
   string: number;
 }
+
+export const getOffsetTime = (offsetHour: number): Moment => {
+  return moment().add(offsetHour, "h");
+};
+export const mysqlDateFormat: string = "YYYY-MM-DD HH:mm:ss";
