@@ -44,7 +44,7 @@ export class Seat extends Model {
   public id!: number;
 
   public giverId!: number;
-  public leaveAt!: Date;
+  public leaveAt!: string;
   public descriptionGiver!: string;
   public seatStatus!: number;
 
@@ -71,7 +71,7 @@ export class Seat extends Model {
           allowNull: true,
         },
         leaveAt: {
-          type: DataTypes.DATE,
+          type: DataTypes.STRING,
           allowNull: true,
         },
         descriptionGiver: {

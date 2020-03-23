@@ -3,24 +3,35 @@ import { Op } from "sequelize";
 import { checkIsUser } from "../milddlewares/vaildation";
 import { User, Seat } from "../db/schema";
 import { getOffsetTime, mysqlDateFormat, Jwt, decryptJwt } from "../lib/helper";
+import moment from "moment-timezone";
+moment.tz.setDefault("Asia/Seoul");
 
 const router: express.Router = express.Router();
-/* 
+
 router.get(
   "/",
   checkIsUser,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<express.Response | void> => {
-    const now: string = getOffsetTime(0).format(mysqlDateFormat);
+  async (_req, res, next): Promise<express.Response | void> => {
+    const nowPlus10HHMM: string = `${moment()
+      .add("m", 10)
+      .hour()}:${moment()
+      .add("m", 10)
+      .minute()}`;
+    const nowDate: string = moment()
+      .hour(0)
+      .minute(0)
+      .second(0)
+      .format(mysqlDateFormat);
+    console.log(nowPlus10HHMM, nowDate);
     try {
       const seats: Seat[] = await Seat.findAll({
         where: {
           seatStatus: 1,
           leaveAt: {
-            [Op.gte]: now,
+            [Op.gte]: nowPlus10HHMM,
+          },
+          createdAt: {
+            [Op.gte]: nowDate,
           },
         },
       });
@@ -30,8 +41,8 @@ router.get(
       return next(e);
     }
   }
-); */
-
+);
+/* 
 let dummyDataIdx = 1;
 const dummyData_Seat: Array<any> = [
   {
@@ -69,133 +80,117 @@ const dummyData_Seat: Array<any> = [
     // takenAt: getOffsetTime(-1).format(mysqlDateFormat),
   },
 ];
-
+ */
 router.get(
   "/:id",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
+  checkIsUser,
+  async (req, res, next): Promise<express.Response | void> => {
     const id: string = req.params.id;
-    let targetData = null;
-    dummyData_Seat.forEach((each) => {
-      if (each.id === Number(id)) targetData = each;
-    });
-    if (!targetData) return res.sendStatus(404);
-    else return res.status(200).json({ seat: targetData });
-  }
-);
-router.get(
-  "/",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    return res.status(200).json({ seats: dummyData_Seat });
+    try {
+      const seat: Seat | null = await Seat.findOne({
+        where: {
+          id: id,
+        },
+      });
+      return res.status(200).json({ seat });
+    } catch (e) {
+      return next(e);
+    }
   }
 );
 
-router.get(
-  "/search",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const location: string | undefined = req.query.location;
-    if (!location) return res.redirect("/seat");
-    const trimmedLocation: string = location.trim();
-    const searchedData = dummyData_Seat.filter(
-      (seat) => seat.cafeName.includes(trimmedLocation) || seat.address.includes(trimmedLocation)
-    );
-    return res.status(200).json({ seats: searchedData });
-  }
-);
+router.post("/", checkIsUser, async (req, res, next) => {
+  const JWT: Jwt | undefined = req.body.JWT;
+  const giverId: number = JWT ? decryptJwt(JWT).id : 99;
+  const {
+    leaveAt,
+    descriptionGiver,
+    cafeName,
+    spaceKakaoMapId,
+    address,
+    geoLocation,
+    havePlug,
+    thumbnailUrl,
+    descriptionSeat,
+    descriptionCloseTime,
+  } = req.body;
+  const seatStatus = 1;
+  // TODO: 아래 검증은 middleware로 분리
+  if (
+    !leaveAt ||
+    !descriptionGiver ||
+    !cafeName ||
+    !spaceKakaoMapId ||
+    !address ||
+    !geoLocation ||
+    !havePlug ||
+    !thumbnailUrl ||
+    !descriptionSeat ||
+    !descriptionCloseTime
+  )
+    return res.sendStatus(422);
+  const newSeat: Seat = await Seat.create({
+    giverId,
+    seatStatus,
+    leaveAt,
+    descriptionGiver,
+    cafeName,
+    spaceKakaoMapId,
+    address,
+    geoLocation,
+    havePlug,
+    thumbnailUrl,
+    descriptionSeat,
+    descriptionCloseTime,
+  });
+  return res.sendStatus(201);
+});
 
-router.post(
-  "/",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const JWT: Jwt | undefined = req.body.JWT;
-    const giverId: number = JWT ? decryptJwt(JWT).id : 99;
-    const {
-      leaveAt,
-      descriptionGiver,
-      cafeName,
-      spaceKakaoMapId,
-      address,
-      geoLocation,
-      havePlug,
-      thumbnailUrl,
-      descriptionSeat,
-      descriptionCloseTime,
-    } = req.body;
-    const seatStatus = 1;
-    // 아래 검증은 middleware로 분리
-    if (
-      !leaveAt ||
-      !descriptionGiver ||
-      !cafeName ||
-      !spaceKakaoMapId ||
-      !address ||
-      !geoLocation ||
-      !havePlug ||
-      !thumbnailUrl ||
-      !descriptionSeat ||
-      !descriptionCloseTime
-    )
-      return res.sendStatus(422);
-    // TODO: User.create()
-    dummyData_Seat.push({
-      id: dummyDataIdx++,
-      giverId,
-      seatStatus,
-      leaveAt,
-      descriptionGiver,
-      cafeName,
-      spaceKakaoMapId,
-      address,
-      geoLocation,
-      havePlug,
-      thumbnailUrl,
-      descriptionSeat,
-      descriptionCloseTime,
-    });
-    return res.sendStatus(201);
-  }
-);
-
-router.patch(
-  "/:id",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const id: string = req.params.id;
-
-    dummyData_Seat.forEach((each) => {
-      if (each.id === Number(id)) {
-        Object.keys(req.body).forEach((key) => {
-          if (
-            [
-              "leaveAt",
-              "descriptionGiver",
-              "cafeName",
-              "spaceKakaoMapId",
-              "address",
-              "geoLocation",
-              "havePlug",
-              "thumbnailUrl",
-              "descriptionSeat",
-              "descriptionCloseTime",
-            ].includes(key)
-          ) {
-            each[key] = req.body[key];
-          }
-        });
-      }
-    });
-    return res.sendStatus(204);
-  }
-);
-
-router.delete("/:id", (req, res, next) => {
-  // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
+router.patch("/:id", checkIsUser, async (req, res, next) => {
   const id: string = req.params.id;
-  const targetId = dummyData_Seat.findIndex((el) => el.id === Number(id));
-  if (targetId === -1) return res.sendStatus(404);
-  dummyData_Seat.splice(targetId, 1);
+  const updatableData = [
+    "leaveAt",
+    "descriptionGiver",
+    "cafeName",
+    "spaceKakaoMapId",
+    "address",
+    "geoLocation",
+    "havePlug",
+    "thumbnailUrl",
+    "descriptionSeat",
+    "descriptionCloseTime",
+  ];
+  const patchBody: any = {};
+  Object.entries(req.body).forEach(([k, v]) => {
+    if (updatableData.includes(k)) patchBody[k] = v;
+  });
+  const nowMinus10HHMM: string = `${moment()
+    .add("m", 10)
+    .hour()}:${moment()
+    .add("m", 10)
+    .minute()}`;
+
+  const updatedSeats: [number, Seat[]] = await Seat.update(patchBody, {
+    where: {
+      id: id,
+      leaveAt: {
+        [Op.lte]: nowMinus10HHMM,
+      },
+    },
+  });
+
+  // 수정할 수 없는 경우 적절한 리턴 필요 (예를 들면 10분도 안남았다던가)
+
+  return res.sendStatus(204);
+});
+
+router.delete("/:id", checkIsUser, async (req, res, next) => {
+  const id: string = req.params.id;
+  const deletedSeatsCnt: number = await Seat.destroy({
+    where: {
+      id: id,
+    },
+  });
   return res.sendStatus(204);
 });
 
