@@ -43,11 +43,13 @@ export class User extends Model {
 export class Seat extends Model {
   public id!: number;
 
+  // about giver
   public giverId!: number;
-  public leaveAt!: string;
+  public leaveAt!: Date;
   public descriptionGiver!: string;
   public seatStatus!: number;
 
+  // about cafe
   public cafeName!: string;
   public spaceKakaoMapId!: string;
   public address!: string;
@@ -55,7 +57,7 @@ export class Seat extends Model {
   public havePlug!: boolean;
   public thumbnailUrl!: string;
   public descriptionSeat!: string;
-  public descriptionCloseTime!: string;
+  public descriptionCloseTime!: Date;
 
   public takerId!: number;
   public takenAt!: Date;
@@ -71,7 +73,7 @@ export class Seat extends Model {
           allowNull: true,
         },
         leaveAt: {
-          type: DataTypes.STRING,
+          type: DataTypes.DATE,
           allowNull: true,
         },
         descriptionGiver: {
@@ -112,7 +114,7 @@ export class Seat extends Model {
           allowNull: true,
         },
         descriptionCloseTime: {
-          type: DataTypes.STRING,
+          type: DataTypes.DATE,
           allowNull: true,
         },
 
