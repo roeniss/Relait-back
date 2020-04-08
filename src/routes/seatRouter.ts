@@ -6,42 +6,36 @@ import { getOffsetTime, mysqlDateFormat, Jwt, decryptJwt } from "../lib/helper";
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
-router.get(
-  "/",
-  checkIsUser,
-  async (_req, res, next): Promise<express.Response | void> => {
-    const nowPlus10HHMM: string = `${moment()
-      .add("m", 10)
-      .hour()}:${moment()
-      .add("m", 10)
-      .minute()}`;
-    const nowDate: string = moment()
-      .hour(0)
-      .minute(0)
-      .second(0)
-      .format(mysqlDateFormat);
-    console.log(nowPlus10HHMM, nowDate);
-    try {
-      const seats: Seat[] = await Seat.findAll({
-        where: {
-          seatStatus: 1,
-          leaveAt: {
-            [Op.gte]: nowPlus10HHMM,
-          },
-          createdAt: {
-            [Op.gte]: nowDate,
-          },
+router.get("/", checkIsUser, async (_req, res, next) => {
+  const nowPlus10HHMM: string = `${moment().add("m", 10).hour()}:${moment()
+    .add("m", 10)
+    .minute()}`;
+  const nowDate: string = moment()
+    .hour(0)
+    .minute(0)
+    .second(0)
+    .format(mysqlDateFormat);
+  console.log(nowPlus10HHMM, nowDate);
+  try {
+    const seats: Seat[] = await Seat.findAll({
+      where: {
+        seatStatus: 1,
+        leaveAt: {
+          [Op.gte]: nowPlus10HHMM,
         },
-      });
-      console.log(seats);
-      return res.status(200).json({ seats });
-    } catch (e) {
-      return next(e);
-    }
+        createdAt: {
+          [Op.gte]: nowDate,
+        },
+      },
+    });
+    console.log(seats);
+    return res.status(200).json({ seats });
+  } catch (e) {
+    return next(e);
   }
-);
+});
 /* 
 let dummyDataIdx = 1;
 const dummyData_Seat: Array<any> = [
@@ -81,23 +75,19 @@ const dummyData_Seat: Array<any> = [
   },
 ];
  */
-router.get(
-  "/:id",
-  checkIsUser,
-  async (req, res, next): Promise<express.Response | void> => {
-    const id: string = req.params.id;
-    try {
-      const seat: Seat | null = await Seat.findOne({
-        where: {
-          id: id,
-        },
-      });
-      return res.status(200).json({ seat });
-    } catch (e) {
-      return next(e);
-    }
+router.get("/:id", checkIsUser, async (req, res, next) => {
+  const id: string = req.params.id;
+  try {
+    const seat: Seat | null = await Seat.findOne({
+      where: {
+        id: id,
+      },
+    });
+    return res.status(200).json({ seat });
+  } catch (e) {
+    return next(e);
   }
-);
+});
 
 router.post("/", checkIsUser, async (req, res, next) => {
   const JWT: Jwt | undefined = req.body.JWT;
@@ -166,9 +156,7 @@ router.patch("/:id", checkIsUser, async (req, res, next) => {
   });
   const nowMinus10HHMM: string = `${moment()
     .add("m", 10)
-    .hour()}:${moment()
-    .add("m", 10)
-    .minute()}`;
+    .hour()}:${moment().add("m", 10).minute()}`;
 
   const updatedSeats: [number, Seat[]] = await Seat.update(patchBody, {
     where: {
