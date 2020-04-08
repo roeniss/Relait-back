@@ -21,4 +21,4 @@ if (process.env.NODE_ENV === "prod") {
   sequelize.sync();
 }
 
-export { sequelize, User };
+export { sequelize, User, Seat };

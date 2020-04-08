@@ -1,37 +1,25 @@
 import * as express from "express";
 import { Op } from "sequelize";
-import { checkIsUser } from "../milddlewares/vaildation";
+import { isValidUser } from "../milddlewares/vaildation";
 import { User, Seat } from "../db/schema";
-import { getOffsetTime, mysqlDateFormat, Jwt, decryptJwt } from "../lib/helper";
+import * as SeatController from "../controller/seat";
+import {
+  getOffsetTime,
+  mysqlDateFormat,
+  Jwt,
+  decryptJwt,
+  JwtPayload,
+} from "../lib/helper";
+import moment from "moment-timezone";
+moment.tz.setDefault("Asia/Seoul");
 
-const router: express.Router = express.Router();
+const router = express.Router();
+
+router.get("/", isValidUser, SeatController.getAvailableSeats);
+router.get("/haveSeat", isValidUser, SeatController.checkCurrentSeat);
+// router.post("/", isValidUser, SeatController.checkCurrentSeat);
+// router.patch("/:id", isValidUser, SeatController.checkCurrentSeat);
 /* 
-router.get(
-  "/",
-  checkIsUser,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<express.Response | void> => {
-    const now: string = getOffsetTime(0).format(mysqlDateFormat);
-    try {
-      const seats: Seat[] = await Seat.findAll({
-        where: {
-          seatStatus: 1,
-          leaveAt: {
-            [Op.gte]: now,
-          },
-        },
-      });
-      console.log(seats);
-      return res.status(200).json({ seats });
-    } catch (e) {
-      return next(e);
-    }
-  }
-); */
-
 let dummyDataIdx = 1;
 const dummyData_Seat: Array<any> = [
   {
@@ -51,151 +39,130 @@ const dummyData_Seat: Array<any> = [
     descriptionCloseTime: `24:00`,
   },
   {
-    id: dummyDataIdx++,
-    giverId: 2,
-    leaveAt: `19:00`,
-    descriptionGiver: "남방에 청바지 입고 있고 모자 쓰고 있습니당",
-    seatStatus: 2,
-    cafeName: "투썸플레이스 신촌점",
-    spaceKakaoMapId: "11221603",
-    address: "서울 서대문구 신촌로 93 1층",
-    geoLocation: "37.555634:126.936586",
-    havePlug: false,
-    thumbnailUrl:
+    "giverId": 2,
+    "leaveAt": "2020-04-08:20:00",
+    "descriptionGiver": "남방에 청바지 입고 있고 모자 쓰고 있습니당",
+    "seatStatus": 2,
+    "cafeName": "투썸플레이스 신촌점",
+    "spaceKakaoMapId": "11221603",
+    "address": "서울 서대문구 신촌로 93 1층",
+    "geoLocation": "37.555634:126.936586",
+    "havePlug": false,
+    "thumbnailUrl":
       "http://img1.daumcdn.net/thumb/T680x420/?fname=http%3A%2F%2Ft1.daumcdn.net%2Fplace%2F5026B83C0E274FA19A3106E1E471036C",
-    descriptionSeat: "2인석 자리입니다. 카운터 근처임",
-    descriptionCloseTime: `22:30`,
+    "descriptionSeat": "2인석 자리입니다. 카운터 근처임",
+    "descriptionCloseTime": "2020-04-08:20:00"
     // takerId: 3,
     // takenAt: getOffsetTime(-1).format(mysqlDateFormat),
   },
 ];
-
-router.get(
-  "/:id",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const id: string = req.params.id;
-    let targetData = null;
-    dummyData_Seat.forEach((each) => {
-      if (each.id === Number(id)) targetData = each;
-    });
-    if (!targetData) return res.sendStatus(404);
-    else return res.status(200).json({ seat: targetData });
-  }
-);
-router.get(
-  "/",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    return res.status(200).json({ seats: dummyData_Seat });
-  }
-);
-
-router.get(
-  "/search",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const location: string | undefined = req.query.location;
-    if (!location) return res.redirect("/seat");
-    const trimmedLocation: string = location.trim();
-    const searchedData = dummyData_Seat.filter(
-      (seat) => seat.cafeName.includes(trimmedLocation) || seat.address.includes(trimmedLocation)
-    );
-    return res.status(200).json({ seats: searchedData });
-  }
-);
-
-router.post(
-  "/",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const JWT: Jwt | undefined = req.body.JWT;
-    const giverId: number = JWT ? decryptJwt(JWT).id : 99;
-    const {
-      leaveAt,
-      descriptionGiver,
-      cafeName,
-      spaceKakaoMapId,
-      address,
-      geoLocation,
-      havePlug,
-      thumbnailUrl,
-      descriptionSeat,
-      descriptionCloseTime,
-    } = req.body;
-    const seatStatus = 1;
-    // 아래 검증은 middleware로 분리
-    if (
-      !leaveAt ||
-      !descriptionGiver ||
-      !cafeName ||
-      !spaceKakaoMapId ||
-      !address ||
-      !geoLocation ||
-      !havePlug ||
-      !thumbnailUrl ||
-      !descriptionSeat ||
-      !descriptionCloseTime
-    )
-      return res.sendStatus(422);
-    // TODO: User.create()
-    dummyData_Seat.push({
-      id: dummyDataIdx++,
-      giverId,
-      seatStatus,
-      leaveAt,
-      descriptionGiver,
-      cafeName,
-      spaceKakaoMapId,
-      address,
-      geoLocation,
-      havePlug,
-      thumbnailUrl,
-      descriptionSeat,
-      descriptionCloseTime,
-    });
-    return res.sendStatus(201);
-  }
-);
-
-router.patch(
-  "/:id",
-  /* checkIsUser, */ (req, res, next) => {
-    // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
-    const id: string = req.params.id;
-
-    dummyData_Seat.forEach((each) => {
-      if (each.id === Number(id)) {
-        Object.keys(req.body).forEach((key) => {
-          if (
-            [
-              "leaveAt",
-              "descriptionGiver",
-              "cafeName",
-              "spaceKakaoMapId",
-              "address",
-              "geoLocation",
-              "havePlug",
-              "thumbnailUrl",
-              "descriptionSeat",
-              "descriptionCloseTime",
-            ].includes(key)
-          ) {
-            each[key] = req.body[key];
-          }
-        });
-      }
-    });
-    return res.sendStatus(204);
-  }
-);
-
-router.delete("/:id", (req, res, next) => {
-  // TODO: 현재는 더미 데이터 (위쪽 참고) 적용중.
+ */
+router.get("/:id", isValidUser, async (req, res, next) => {
   const id: string = req.params.id;
-  const targetId = dummyData_Seat.findIndex((el) => el.id === Number(id));
-  if (targetId === -1) return res.sendStatus(404);
-  dummyData_Seat.splice(targetId, 1);
+  try {
+    const seat: Seat | null = await Seat.findOne({
+      where: {
+        id: id,
+      },
+    });
+    return res.status(200).json({ seat });
+  } catch (e) {
+    return next(e);
+  }
+});
+
+router.post("/", isValidUser, async (req, res, next) => {
+  const JWT = <string>req.body.JWT;
+  const jwtPayload: JwtPayload | null = decryptJwt(JWT);
+  let giverId: number = jwtPayload ? jwtPayload.id : 999;
+  const {
+    leaveAt,
+    descriptionGiver,
+    cafeName,
+    spaceKakaoMapId,
+    address,
+    geoLocation,
+    havePlug,
+    thumbnailUrl,
+    descriptionSeat,
+    descriptionCloseTime,
+  } = req.body;
+  console.log();
+
+  const seatStatus = 1;
+  // TODO: 아래 검증은 middleware로 분리
+  if (
+    !leaveAt ||
+    !descriptionGiver ||
+    !cafeName ||
+    !spaceKakaoMapId ||
+    !address ||
+    !geoLocation ||
+    havePlug === undefined ||
+    !thumbnailUrl ||
+    !descriptionSeat ||
+    !descriptionCloseTime
+  )
+    return res.sendStatus(422);
+  const newSeat: Seat = await Seat.create({
+    giverId,
+    seatStatus,
+    leaveAt,
+    descriptionGiver,
+    cafeName,
+    spaceKakaoMapId,
+    address,
+    geoLocation,
+    havePlug,
+    thumbnailUrl,
+    descriptionSeat,
+    descriptionCloseTime,
+  });
+  return res.sendStatus(201);
+});
+
+router.patch("/:id", isValidUser, async (req, res, next) => {
+  const id: string = req.params.id;
+  const updatableData = [
+    "leaveAt",
+    "descriptionGiver",
+    "cafeName",
+    "spaceKakaoMapId",
+    "address",
+    "geoLocation",
+    "havePlug",
+    "thumbnailUrl",
+    "descriptionSeat",
+    "descriptionCloseTime",
+  ];
+  const patchBody: any = {};
+  Object.entries(req.body).forEach(([k, v]) => {
+    if (updatableData.includes(k)) patchBody[k] = v;
+  });
+  const nowMinus10HHMM: string = `${moment()
+    .add("m", 10)
+    .hour()}:${moment().add("m", 10).minute()}`;
+
+  console.log(patchBody);
+
+  const updatedSeats: [number, Seat[]] = await Seat.update(patchBody, {
+    where: {
+      id: id,
+    },
+  });
+
+  // 수정할 수 없는 경우 적절한 리턴 필요 (예를 들면 10분도 안남았다던가)
+
+  return res.sendStatus(204);
+});
+
+router.delete("/:id", isValidUser, async (req, res, next) => {
+  const id: string = req.params.id;
+  const deletedSeatsCnt: number = await Seat.destroy({
+    where: {
+      id: id,
+    },
+  });
   return res.sendStatus(204);
 });
 

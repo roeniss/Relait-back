@@ -1,39 +1,27 @@
+import * as express from "express";
 import { User } from "../db";
-import { makeJwt, Jwt, JwtPayload, decryptJwt } from "../lib/helper";
+import { makeJwt, Jwt } from "../lib/helper";
 
-export const login = async (user: User): Promise<Jwt> => {
+//
+// (1) login || signup
+// (2) send token to client
+//
+export const login = async (req: express.Request, res: express.Response) => {
   try {
-    const loginUser: User | null = await User.findOne({
+    const body = req.body;
+    const condition = {
       where: {
-        vender: user.vender,
-        uniqueId: user.uniqueId,
+        vender: body.vender,
+        uniqueId: body.uniqueId,
       },
-    });
+    };
+    const targetUser: User =
+      (await User.findOne(condition)) || (await User.create(condition));
 
-    if (loginUser) {
-      return makeJwt(loginUser);
-    } else {
-      const signupUser: User = await User.create({ vender: user.vender, uniqueId: user.uniqueId });
-      return makeJwt(signupUser);
-    }
+    const JWT: Jwt = makeJwt(targetUser);
+    // const seat: Seat | null = await SeatController.haveSeat(JWT);
+    return res.status(200).json({ JWT /* , SeatStatus */ });
   } catch (error) {
-    throw new Error(error);
-  }
-};
-
-// TODO: 이 아래쪽은 추후 확인 요망
-export const withdraw = async (token: Jwt): Promise<number> => {
-  // TODO: 카카오 쪽 유저 정보도 날려야 됨. 일단은 보류
-  try {
-    const payload: JwtPayload = decryptJwt(token);
-    const deletedUsersCnt: number = await User.destroy({
-      where: {
-        id: payload.id,
-      },
-    });
-    return deletedUsersCnt;
-  } catch (error) {
-    console.error(error);
-    throw error;
+    return res.sendStatus(500);
   }
 };

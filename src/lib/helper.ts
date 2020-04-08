@@ -7,14 +7,14 @@ import moment, { Moment } from "moment";
  * (Invalid token example: modified, expired)
  *
  */
-export const decryptJwt = (jwonwebtoken: Jwt): JwtPayload => {
+export const decryptJwt = (jwonwebtoken: Jwt): JwtPayload | null => {
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) throw new Error("No JWT Secret");
     const payload: JwtPayload = <JwtPayload>jwt.verify(jwonwebtoken, jwtSecret);
     return payload;
   } catch (error) {
-    throw error;
+    return null;
   }
 };
 
@@ -46,11 +46,14 @@ export const makeJwt = (user: User): Jwt => {
   if (!jwtSecret) throw new Error("No JWT Secret");
   const expire = process.env.JWT_EXPIRE;
   if (!expire) throw new Error("No expire date environment variable");
-  const token = jwt.sign(payload, jwtSecret, { expiresIn: process.env.JWT_EXPIRE });
+  const token = jwt.sign(payload, jwtSecret, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
   return token;
 };
 
-export const isObj = (target: any): boolean => typeof target === "object" && target !== null;
+export const isObj = (target: any): boolean =>
+  typeof target === "object" && target !== null;
 
 interface ErrorObject {
   name: string;
