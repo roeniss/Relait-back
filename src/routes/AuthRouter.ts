@@ -4,15 +4,15 @@ import * as SeatController from "../controller/seat";
 import { Op } from "sequelize";
 import { User, Seat } from "../db";
 import { Jwt, JwtPayload, decryptJwt, mysqlDateFormat } from "../lib/helper";
-import { checkLoginInput, checkIsUser } from "../milddlewares/vaildation";
+import { hasValidLoginBody, isValidUser } from "../milddlewares/vaildation";
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
 const router: express.Router = express.Router();
 
-router.post("/login", AuthController.login);
+router.post("/login", hasValidLoginBody, AuthController.login);
 
-// router.get("/state", checkIsUser, async (req, res, next) => {
+// router.get("/state", isValidUser, async (req, res, next) => {
 //   try {
 //     const JWT: Jwt = req.body.JWT;
 //     const payload: JwtPayload = decryptJwt(JWT);

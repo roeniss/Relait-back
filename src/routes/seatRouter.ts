@@ -1,41 +1,24 @@
 import * as express from "express";
 import { Op } from "sequelize";
-import { checkIsUser } from "../milddlewares/vaildation";
+import { isValidUser } from "../milddlewares/vaildation";
 import { User, Seat } from "../db/schema";
-import { getOffsetTime, mysqlDateFormat, Jwt, decryptJwt } from "../lib/helper";
+import * as SeatController from "../controller/seat";
+import {
+  getOffsetTime,
+  mysqlDateFormat,
+  Jwt,
+  decryptJwt,
+  JwtPayload,
+} from "../lib/helper";
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
 const router = express.Router();
 
-router.get("/", checkIsUser, async (_req, res, next) => {
-  const nowPlus10HHMM: string = `${moment().add("m", 10).hour()}:${moment()
-    .add("m", 10)
-    .minute()}`;
-  const nowDate: string = moment()
-    .hour(0)
-    .minute(0)
-    .second(0)
-    .format(mysqlDateFormat);
-  console.log(nowPlus10HHMM, nowDate);
-  try {
-    const seats: Seat[] = await Seat.findAll({
-      where: {
-        seatStatus: 1,
-        leaveAt: {
-          [Op.gte]: nowPlus10HHMM,
-        },
-        createdAt: {
-          [Op.gte]: nowDate,
-        },
-      },
-    });
-    console.log(seats);
-    return res.status(200).json({ seats });
-  } catch (e) {
-    return next(e);
-  }
-});
+router.get("/", isValidUser, SeatController.getAvailableSeats);
+router.get("/haveSeat", isValidUser, SeatController.checkCurrentSeat);
+// router.post("/", isValidUser, SeatController.checkCurrentSeat);
+// router.patch("/:id", isValidUser, SeatController.checkCurrentSeat);
 /* 
 let dummyDataIdx = 1;
 const dummyData_Seat: Array<any> = [
@@ -56,26 +39,25 @@ const dummyData_Seat: Array<any> = [
     descriptionCloseTime: `24:00`,
   },
   {
-    id: dummyDataIdx++,
-    giverId: 2,
-    leaveAt: `19:00`,
-    descriptionGiver: "남방에 청바지 입고 있고 모자 쓰고 있습니당",
-    seatStatus: 2,
-    cafeName: "투썸플레이스 신촌점",
-    spaceKakaoMapId: "11221603",
-    address: "서울 서대문구 신촌로 93 1층",
-    geoLocation: "37.555634:126.936586",
-    havePlug: false,
-    thumbnailUrl:
+    "giverId": 2,
+    "leaveAt": "2020-04-08:20:00",
+    "descriptionGiver": "남방에 청바지 입고 있고 모자 쓰고 있습니당",
+    "seatStatus": 2,
+    "cafeName": "투썸플레이스 신촌점",
+    "spaceKakaoMapId": "11221603",
+    "address": "서울 서대문구 신촌로 93 1층",
+    "geoLocation": "37.555634:126.936586",
+    "havePlug": false,
+    "thumbnailUrl":
       "http://img1.daumcdn.net/thumb/T680x420/?fname=http%3A%2F%2Ft1.daumcdn.net%2Fplace%2F5026B83C0E274FA19A3106E1E471036C",
-    descriptionSeat: "2인석 자리입니다. 카운터 근처임",
-    descriptionCloseTime: `22:30`,
+    "descriptionSeat": "2인석 자리입니다. 카운터 근처임",
+    "descriptionCloseTime": "2020-04-08:20:00"
     // takerId: 3,
     // takenAt: getOffsetTime(-1).format(mysqlDateFormat),
   },
 ];
  */
-router.get("/:id", checkIsUser, async (req, res, next) => {
+router.get("/:id", isValidUser, async (req, res, next) => {
   const id: string = req.params.id;
   try {
     const seat: Seat | null = await Seat.findOne({
@@ -89,9 +71,10 @@ router.get("/:id", checkIsUser, async (req, res, next) => {
   }
 });
 
-router.post("/", checkIsUser, async (req, res, next) => {
-  const JWT: Jwt | undefined = req.body.JWT;
-  const giverId: number = JWT ? decryptJwt(JWT).id : 99;
+router.post("/", isValidUser, async (req, res, next) => {
+  const JWT = <string>req.body.JWT;
+  const jwtPayload: JwtPayload | null = decryptJwt(JWT);
+  let giverId: number = jwtPayload ? jwtPayload.id : 999;
   const {
     leaveAt,
     descriptionGiver,
@@ -104,6 +87,8 @@ router.post("/", checkIsUser, async (req, res, next) => {
     descriptionSeat,
     descriptionCloseTime,
   } = req.body;
+  console.log();
+
   const seatStatus = 1;
   // TODO: 아래 검증은 middleware로 분리
   if (
@@ -113,7 +98,7 @@ router.post("/", checkIsUser, async (req, res, next) => {
     !spaceKakaoMapId ||
     !address ||
     !geoLocation ||
-    !havePlug ||
+    havePlug === undefined ||
     !thumbnailUrl ||
     !descriptionSeat ||
     !descriptionCloseTime
@@ -136,7 +121,7 @@ router.post("/", checkIsUser, async (req, res, next) => {
   return res.sendStatus(201);
 });
 
-router.patch("/:id", checkIsUser, async (req, res, next) => {
+router.patch("/:id", isValidUser, async (req, res, next) => {
   const id: string = req.params.id;
   const updatableData = [
     "leaveAt",
@@ -158,12 +143,11 @@ router.patch("/:id", checkIsUser, async (req, res, next) => {
     .add("m", 10)
     .hour()}:${moment().add("m", 10).minute()}`;
 
+  console.log(patchBody);
+
   const updatedSeats: [number, Seat[]] = await Seat.update(patchBody, {
     where: {
       id: id,
-      leaveAt: {
-        [Op.lte]: nowMinus10HHMM,
-      },
     },
   });
 
@@ -172,7 +156,7 @@ router.patch("/:id", checkIsUser, async (req, res, next) => {
   return res.sendStatus(204);
 });
 
-router.delete("/:id", checkIsUser, async (req, res, next) => {
+router.delete("/:id", isValidUser, async (req, res, next) => {
   const id: string = req.params.id;
   const deletedSeatsCnt: number = await Seat.destroy({
     where: {
