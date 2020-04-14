@@ -15,10 +15,11 @@ export const login = async (req: express.Request, res: express.Response) => {
         uniqueId: body.uniqueId,
       },
     };
+
     let isExistentUser: User | null = await User.findOne(condition);
     const user: User = isExistentUser
       ? isExistentUser
-      : await User.create(condition);
+      : await User.create(condition.where);
     const JWT: Jwt = makeJwt(user);
     const statusCode = isExistentUser ? 200 : 201;
     // const seat: Seat | null = await SeatController.haveSeat(JWT);
