@@ -35,7 +35,7 @@ export const getAvailableSeats = async (
 
 //
 // If user have registered a seat, server will send its id.
-// otherwise, send 0
+// otherwise, send 404
 //
 export const checkCurrentSeat = async (
   req: express.Request,
@@ -43,7 +43,6 @@ export const checkCurrentSeat = async (
 ) => {
   try {
     const payload = <JwtPayload>decryptJwt(req.body.JWT);
-
     const timeAfter10Min: string = timeShiftedFor(10);
     const todayMidnight: string = midnightShiftedFor(0);
     const condition = {
@@ -59,10 +58,175 @@ export const checkCurrentSeat = async (
       },
     };
     const giverSeat: Seat | null = await Seat.findOne(condition);
-    return res
-      .status(200)
-      .json({ registeredSeatId: (giverSeat && giverSeat.id) || 0 });
+
+    if (!!giverSeat) return res.status(200).json(giverSeat);
+    else res.sendStatus(404);
   } catch (error) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// return data of given id's seat
+//
+export const getSeat = async (req: express.Request, res: express.Response) => {
+  try {
+    const condition = {
+      where: {
+        id: req.params.id,
+      },
+    };
+    const seat: Seat | null = await Seat.findOne(condition);
+    if (!!seat) return res.status(200).json(seat);
+    else res.sendStatus(404);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// Create new Seat
+//
+export const createSeat = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const condition: any = {
+      giverId: payload.id,
+      seatStatus: 1,
+      leaveAt: req.body.leaveAt,
+      descriptionGiver: req.body.descriptionGiver,
+      cafeName: req.body.cafeName,
+      spaceKakaoMapId: req.body.spaceKakaoMapId,
+      address: req.body.address,
+      geoLocation: req.body.geoLocation,
+      havePlug: req.body.havePlug,
+      thumbnailUrl: req.body.thumbnailUrl,
+      descriptionSeat: req.body.descriptionSeat,
+    };
+    if (req.body.descriptionCloseTime)
+      condition.descriptionCloseTime = req.body.descriptionCloseTime; // optional parameter
+    const newSeat: Seat = await Seat.create(condition);
+    return res.sendStatus(201);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// Update new Seat
+//
+export const updateSeat = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const updatableData = [
+      "leaveAt",
+      "descriptionGiver",
+      "cafeName",
+      "spaceKakaoMapId",
+      "address",
+      "geoLocation",
+      "havePlug",
+      "thumbnailUrl",
+      "descriptionSeat",
+      "descriptionCloseTime",
+    ];
+    const dataToUpdate: any = {};
+    Object.entries(req.body).forEach(([k, v]) => {
+      if (updatableData.includes(k)) dataToUpdate[k] = v;
+    });
+    const condition = {
+      where: {
+        id: req.params.id,
+        giverId: payload.id,
+        seatStatus: 1,
+        leaveAt: {
+          [Op.gte]: timeShiftedFor(10),
+        },
+        createdAt: {
+          [Op.gte]: midnightShiftedFor(0),
+        },
+      },
+    };
+
+    const updatedSeats: [number, Seat[]] = await Seat.update(
+      dataToUpdate,
+      condition
+    );
+    if (updatedSeats[0] === 0) res.sendStatus(404);
+    else return res.sendStatus(204);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// Delete new Seat
+//
+export const deleteSeat = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const dataToUpdate = {
+      seatStatus: 9,
+    };
+    const condition = {
+      where: {
+        id: req.params.id,
+        giverId: payload.id,
+        createdAt: {
+          [Op.gte]: midnightShiftedFor(0),
+        },
+      },
+    };
+
+    const deletedSeats: [number, Seat[]] = await Seat.update(
+      dataToUpdate,
+      condition
+    );
+    if (deletedSeats[0] === 0) res.sendStatus(404);
+    else return res.sendStatus(204);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// Restore deleted seat (for Debugging)
+//
+export const restoreSeat = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const dataToUpdate = {
+      seatStatus: 1,
+    };
+    const condition = {
+      where: {
+        id: req.params.id,
+        giverId: payload.id,
+        createdAt: {
+          [Op.gte]: midnightShiftedFor(0),
+        },
+      },
+    };
+
+    const deletedSeats: [number, Seat[]] = await Seat.update(
+      dataToUpdate,
+      condition
+    );
+    if (deletedSeats[0] === 0) res.sendStatus(404);
+    else return res.sendStatus(204);
+  } catch (e) {
     return res.sendStatus(500);
   }
 };

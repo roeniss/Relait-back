@@ -15,12 +15,14 @@ export const login = async (req: express.Request, res: express.Response) => {
         uniqueId: body.uniqueId,
       },
     };
-    const targetUser: User =
-      (await User.findOne(condition)) || (await User.create(condition));
-
-    const JWT: Jwt = makeJwt(targetUser);
+    let isExistentUser: User | null = await User.findOne(condition);
+    const user: User = isExistentUser
+      ? isExistentUser
+      : await User.create(condition);
+    const JWT: Jwt = makeJwt(user);
+    const statusCode = isExistentUser ? 200 : 201;
     // const seat: Seat | null = await SeatController.haveSeat(JWT);
-    return res.status(200).json({ JWT /* , SeatStatus */ });
+    return res.status(statusCode).json({ JWT /* , SeatStatus */ });
   } catch (error) {
     return res.sendStatus(500);
   }
