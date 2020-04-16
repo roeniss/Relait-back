@@ -8,11 +8,11 @@ import { makeJwt, Jwt } from "../lib/helper";
 //
 export const login = async (req: express.Request, res: express.Response) => {
   try {
-    const body = req.body;
+    const { vender, uniqueId } = req.body;
     const condition = {
       where: {
-        vender: body.vender,
-        uniqueId: body.uniqueId,
+        vender,
+        uniqueId,
       },
     };
 
@@ -20,7 +20,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     const user: User = isExistentUser
       ? isExistentUser
       : await User.create(condition.where);
-    const JWT: Jwt = makeJwt(user);
+    const JWT = makeJwt(user);
     const statusCode = isExistentUser ? 200 : 201;
     // const seat: Seat | null = await SeatController.haveSeat(JWT);
     return res.status(statusCode).json({ JWT /* , SeatStatus */ });

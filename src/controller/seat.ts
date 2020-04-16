@@ -13,8 +13,8 @@ export const getAvailableSeats = async (
   res: express.Response
 ) => {
   try {
-    const timeAfter10Min: string = timeShiftedFor(10);
-    const todayMidnight: string = midnightShiftedFor(0);
+    const timeAfter10Min = timeShiftedFor(10);
+    const todayMidnight = midnightShiftedFor(0);
     const condition = {
       where: {
         seatStatus: 1,
@@ -42,9 +42,10 @@ export const checkCurrentSeat = async (
   res: express.Response
 ) => {
   try {
-    const payload = <JwtPayload>decryptJwt(req.body.JWT);
-    const timeAfter10Min: string = timeShiftedFor(10);
-    const todayMidnight: string = midnightShiftedFor(0);
+    const { JWT } = req.body;
+    const payload = <JwtPayload>decryptJwt(JWT);
+    const timeAfter10Min = timeShiftedFor(10);
+    const todayMidnight = midnightShiftedFor(0);
     const condition = {
       where: {
         giverId: payload.id,
@@ -92,22 +93,41 @@ export const createSeat = async (
   res: express.Response
 ) => {
   try {
-    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const {
+      JWT,
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
+      descriptionCloseTime,
+    } = req.body;
+
+    const payload = <JwtPayload>decryptJwt(JWT);
+
+    // essntial parameters
     const condition: any = {
       giverId: payload.id,
       seatStatus: 1,
-      leaveAt: req.body.leaveAt,
-      descriptionGiver: req.body.descriptionGiver,
-      cafeName: req.body.cafeName,
-      spaceKakaoMapId: req.body.spaceKakaoMapId,
-      address: req.body.address,
-      geoLocation: req.body.geoLocation,
-      havePlug: req.body.havePlug,
-      thumbnailUrl: req.body.thumbnailUrl,
-      descriptionSeat: req.body.descriptionSeat,
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
     };
-    if (req.body.descriptionCloseTime)
-      condition.descriptionCloseTime = req.body.descriptionCloseTime; // optional parameter
+
+    // optional parameters
+    if (descriptionCloseTime)
+      condition.descriptionCloseTime = descriptionCloseTime;
+
     const newSeat: Seat = await Seat.create(condition);
     return res.sendStatus(201);
   } catch (e) {
@@ -123,7 +143,8 @@ export const updateSeat = async (
   res: express.Response
 ) => {
   try {
-    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const { JWT } = req.body;
+    const payload = <JwtPayload>decryptJwt(JWT);
     const updatableData = [
       "leaveAt",
       "descriptionGiver",
@@ -173,7 +194,8 @@ export const deleteSeat = async (
   res: express.Response
 ) => {
   try {
-    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const { JWT } = req.body;
+    const payload = <JwtPayload>decryptJwt(JWT);
     const dataToUpdate = {
       seatStatus: 9,
     };
@@ -206,7 +228,8 @@ export const restoreSeat = async (
   res: express.Response
 ) => {
   try {
-    const payload = <JwtPayload>decryptJwt(req.body.JWT);
+    const { JWT } = req.body;
+    const payload = <JwtPayload>decryptJwt(JWT);
     const dataToUpdate = {
       seatStatus: 1,
     };

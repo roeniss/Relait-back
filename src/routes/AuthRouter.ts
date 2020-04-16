@@ -38,7 +38,7 @@ router.post("/login", hasValidLoginBody, AuthController.login);
 //       },
 //     });
 //     const status = giveSeat ? "give" : takeSeat ? "take" : "none";
-//     return res.status(200).json({ status, seat: giveSeat || takeSeat });
+//     return res.status(200).json({ status, seat: giveSeat ?? takeSeat });
 //   } catch (e) {
 //     return next(e);
 //   }

@@ -1,8 +1,8 @@
-const DB_NAME: string = process.env.DB_NAME || "";
-const DB_PASSWORD: string = process.env.DB_PASSWORD || "";
-const DB_HOST: string = process.env.DB_HOST || "";
-const DB_DIALECT: string = process.env.DB_DIALECT || "";
-const DB_USER: string = process.env.DB_USER || "";
+const DB_NAME: string = process.env.DB_NAME ?? "";
+const DB_PASSWORD: string = process.env.DB_PASSWORD ?? "";
+const DB_HOST: string = process.env.DB_HOST ?? "";
+const DB_DIALECT: string = process.env.DB_DIALECT ?? "";
+const DB_USER: string = process.env.DB_USER ?? "";
 
 const dbOptions = {
   host: DB_HOST,

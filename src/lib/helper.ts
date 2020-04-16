@@ -52,9 +52,6 @@ export const makeJwt = (user: User): Jwt => {
   return token;
 };
 
-export const isObj = (target: any): boolean =>
-  typeof target === "object" && target !== null;
-
 interface ErrorObject {
   name: string;
   message: string;
@@ -65,7 +62,7 @@ export const errorToString = (value: Error | string) => {
     const container: ErrorObject = { name: "", message: "", stack: "" };
     container["name"] = value.name;
     container["message"] = value.message;
-    container["stack"] = value.stack || "";
+    container["stack"] = value.stack ?? "";
     return JSON.stringify(container);
   } else {
     value;
