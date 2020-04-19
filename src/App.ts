@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { errorHandling, customLogger } from "./milddlewares";
 import routers from "./routes";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger";
 
 class App {
   public app: express.Application;
@@ -16,6 +18,7 @@ class App {
 
     // 라우팅
     this.app.use("/", routers);
+    this.app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // 에러 핸들링
     this.app.use(errorHandling);

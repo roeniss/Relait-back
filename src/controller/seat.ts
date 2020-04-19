@@ -60,7 +60,7 @@ export const checkCurrentSeat = async (
     };
     const giverSeat: Seat | null = await Seat.findOne(condition);
 
-    if (!!giverSeat) return res.status(200).json(giverSeat);
+    if (giverSeat) return res.status(200).json({ seat: giverSeat });
     else res.sendStatus(404);
   } catch (error) {
     return res.sendStatus(500);
