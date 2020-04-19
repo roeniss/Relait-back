@@ -229,7 +229,7 @@ router.post(
 /**
  * @swagger
  *
- * '/restore/:id"':
+ * '/restore/:id':
  *   post:
  *     tags:
  *       - "Seat"
