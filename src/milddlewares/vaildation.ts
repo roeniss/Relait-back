@@ -1,8 +1,6 @@
 import * as express from "express";
 import * as jwt from "jsonwebtoken";
 import { decryptJwt, JwtPayload, Jwt } from "../lib/helper";
-import fetch, { FetchError, Response as FetchResponse } from "node-fetch";
-import { Seat } from "../db";
 
 export const hasValidLoginBody = (
   req: express.Request,
@@ -10,7 +8,7 @@ export const hasValidLoginBody = (
   next: express.NextFunction
 ): express.Response | void => {
   const { uniqueId, vender } = req.body;
-  if (!uniqueId ?? !vender) return res.sendStatus(422);
+  if (!uniqueId || !vender) return res.sendStatus(422);
   return next();
 };
 
@@ -19,12 +17,19 @@ export const isValidUser = (
   res: express.Response,
   next: express.NextFunction
 ): express.Response | void => {
-  const { JWT } = req.body;
-  if (!JWT) return res.sendStatus(422);
-
+  const { authorization } = req.headers;
+  // 토큰이 없음
+  if (!authorization || authorization.split(" ").length < 2)
+    return res.sendStatus(403);
+  const [type, JWT] = authorization.split(" ");
+  // 토큰의 타입이 비정상
+  if (type !== "Bearer") return res.sendStatus(403);
   const payload: JwtPayload | null = decryptJwt(JWT);
+  // 토큰 자체가 비정상
   if (!payload || Number(payload.userStatus) !== 1) return res.sendStatus(403);
 
+  // 토큰 내용을 저장
+  res.locals = payload;
   return next();
 };
 
