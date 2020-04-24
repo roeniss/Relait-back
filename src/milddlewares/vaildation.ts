@@ -20,13 +20,15 @@ export const isValidUser = (
   const { authorization } = req.headers;
   // 토큰이 없음
   if (!authorization || authorization.split(" ").length < 2)
-    return res.sendStatus(403);
+    return res.sendStatus(401);
   const [type, JWT] = authorization.split(" ");
   // 토큰의 타입이 비정상
-  if (type !== "Bearer") return res.sendStatus(403);
+  if (type !== "Bearer") return res.sendStatus(401);
   const payload: JwtPayload | null = decryptJwt(JWT);
   // 토큰 자체가 비정상
-  if (!payload || Number(payload.userStatus) !== 1) return res.sendStatus(403);
+  if (!payload) return res.sendStatus(401);
+  // 토큰은 정상이나 사용자 상태가 권한 부족
+  if (Number(payload.userStatus) !== 1) return res.sendStatus(403);
 
   // 토큰 내용을 저장
   res.locals = payload;
