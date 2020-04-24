@@ -1,0 +1,335 @@
+openapi: '3.0.0'
+info:
+  title: "SRelait Backend API"
+  description: "Relait에서 사용하는 API 리스트입니다."
+  version: "1.0.1"
+  
+servers:
+  - url: "http://15.165.216.17:9000/"
+  
+tags:
+- name: "Auth"
+  description: "유저 정보"
+- name: "Seat"
+  description: "자리 정보"
+
+paths:
+  /user/login:
+    post:
+      tags:
+      - "Auth"
+      summary: "로그인 또는 회원가입"
+      description: "일치하는 정보가 없으면 자동으로 회원가입이 완료됩니다. 아래 requestBody의 요소 중 id, takerId, takenAt은 무시해주세요. 나머지는 필수입니다."
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Auth'
+              
+      responses:
+        200:
+          description: "로그인 성공"
+          headers:
+            authentificate:
+              schema:
+                type: string
+              description: "JWT 토큰"
+        201:
+          description: "회원가입 성공"
+          headers:
+            authentificate:
+              schema:
+                type: string
+              description: 'JWT 토큰'
+        422:
+          $ref: "#/components/responses/422"
+
+  /seat:
+    get:
+      tags:
+      - "Seat"
+      summary: "전체 자리 정보 호출"
+      description: "take 가능한 seat들의 배열을 받아옵니다."
+      
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+        
+      responses:
+        200:
+          description: "[{seat1}, {seat2}, {seat3}, ...]"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seats:
+                    type: "array"
+                    description: "take 가능한 Seat 배열"
+                    items:
+                      $ref : "#/components/schemas/Seat"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        422:
+          $ref: "#/components/responses/422"
+    post:
+      tags:
+      - "Seat"
+      summary: "새로운 seat 등록('give')"
+      description: "seat 하나를 생성합니다. (*아래 적힌 request body 중 id, takerId, takerAt은 생략해주세요)"
+      
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Seat"
+            
+      responses:
+        201:
+          $ref: "#/components/responses/401"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        422:
+          $ref: "#/components/responses/422"
+          
+  /haveSeat:
+    get:
+      tags:
+      - "Seat"
+      summary: "자신이 등록(give)한 게시물이 있는지 확인"
+      description: "본인이 등록한(give) seat 데이터를 가져온다"
+      
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        422:
+          $ref: "#/components/responses/422"
+  
+  /seat/{seatId}:
+    get:
+      tags:
+      - "Seat"
+      summary: "특정 id의 seat 정보 호출"
+      description: "해당 id의 seat 정보를 가져옵니다"
+      
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+        - in: path
+          name: seatId
+          schema:
+            type: integer
+          required: true
+          description: "seat 게시물 id"
+          
+      responses:
+        200:
+          description: "{seat}"
+          content:
+            application/json:
+              schema:
+                $ref : "#/components/schemas/Seat"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        422:
+          $ref: "#/components/responses/422"
+    patch:
+      tags:
+      - "Seat"
+      summary: "특정 id의 seat 정보 수정 (giver만 가능)"
+      description: "해당 id의 seat 정보를 수정합니다. (*다음 항목 중 한 개 이상이 body에 있으면 됩니다: **leaveAt, descriptionGiver, cafeName, spaceKakaoMapId, address, geoLocation, havePlug, thumbnailUrl, descriptionSeat, descriptionCloseTime**)"
+      
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+        - in: path
+          name: seatId
+          schema:
+            type: integer
+          required: true
+          description: "seat 게시물 id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Seat"
+          
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+        422:
+          $ref: "#/components/responses/422"
+    delete:
+      tags:
+      - "Seat"
+      summary: "특정 id의 seat 삭제"
+      description: "해당 id의 seat를 삭제합니다."
+      
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+        - in: path
+          name: seatId
+          schema:
+            type: integer
+          required: true
+          description: "seat 게시물 id"
+          
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+        422:
+          $ref: "#/components/responses/422"    
+    
+  /restore/{seatId}:
+    post:
+      tags:
+      - "Seat"
+      summary: "특정 id의 seat 삭제를 취소 (복구) for debugging"
+      description: "삭제된 id의 seat를 복구합니다 for debugging"
+      
+      parameters:
+        - in: path
+          name: seatId
+          schema:
+            type: integer
+          required: true
+          description: "seat 게시물 id"
+          
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+        422:
+          $ref: "#/components/responses/422"    
+          
+components:
+  schemas:
+    Auth:
+      type: "object"
+      required:
+      - "name"
+      - "photoUrls"
+      properties:
+        uniqueId:
+          type: "string"
+          example: "5124123213"
+          description: "특정 소셜 플랫폼의 고유 ID"
+        vendor:
+          type: "string"
+          example: "1"
+          description: "특정 소셜 플랫폼의 일련번호 (현재 카카오만 지원)"
+    Seat:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "게시물(seat) 일련번호"
+        giverId:
+          type: "string"
+          description: "기버 ID"
+          example: '12'
+        leaveAt:
+          type: "string"
+          description: "기버가 자리에서 일어나기로 지정한 시간 (포맷: unix)"
+          example: "1587550606"
+        descriptionGiver:
+          type: "string"
+          description: "기버의 겉모습 설명"
+          example: "파란색 후드티 입고 있습니다"
+        seatStatus:
+          type: "string"
+          description: "take 가능 여부 (1: 가능, 2: 불가능)"
+          example: "1"
+        cafeName:
+          type: "string"
+          description: "카페 이름"
+          example: "스타벅스 이대R점"
+        spaceKakaoMapId:
+          type: "string"
+          description: "카카오맵에 등록된 가게 일련번호"
+          example: "725420477"
+        address:
+          type: "string"
+          description: "가게 주소"
+          example: "서울 서대문구 이화여대길 34"
+        geoLocation:
+          type: "string"
+          description: "위경도 정보('북위:동경')"
+          example: "37.558435:126.945898"
+        havePlug:
+          type: "string"
+          description: "자리에 콘센트 유무 (0 없음, 1: 있음)"
+          example: "0"
+        thumbnailUrl:
+          type: "string"
+          description: "썸네일 이미지 (카카오맵에서 추출 예정)"
+          example: "https://img1.daumcdn.net/thumb/T680x420/?fname=http%3A%2F%2Ft1.daumcdn.net%2Fplace%2F0B921DBD85AF4DADB961ABDBD5437A03"
+        descriptionSeat:
+          type: "string"
+          description: "자리에 대한 설명"
+          example: "창가 자리예요"
+        descriptionCloseTime:
+          type: "string"
+          description: "가게 닫는 시간 (포맷: unix)"
+          example: "1587550606"
+        takerId:
+          type: "string"
+          description: "이 자리를 take한 테이커의 ID"
+          example: "23"
+        takenAt:
+          type: "string"
+          description: "테이커가 자리를 택한 시간 (포맷: unix)"
+          example: "1587550606"
+          
+  parameters:
+    authentificate:
+      in: header
+      name: "authentificate"
+      schema:
+        type: string
+      required: true
+      description: "JWT 토큰 (type: Bearer)"
+      
+  responses:
+    201:
+      description: "Created - 등록 성공"
+    204:
+      description: "No Content - 업데이트 성공 (보여줄 내용은 없음)"
+    401:
+      description: "Unauthorized - 인증 실패. (ex) JWT 토큰 헤더가 제공되지 않음"
+    403:
+      description: "description - 권한 없음. (ex) JWT 토큰이 제공되었으나 해당 유저에게 권한이 없음 (userStatus != 1)"
+    404:
+      description: "NotFound - 목표가 되는 데이터가 사용할 수 없거나 존재하지 않음. (ex) 잘못된 URI, 해당 id의 데이터가 없음, 또는 있어도 보여줄 수 없음"
+    422:
+      description: "UnprocessableEntity - 처리 불가한 데이터. (ex) 필수 파라미터가 1개 이상 제공되지 않음"
