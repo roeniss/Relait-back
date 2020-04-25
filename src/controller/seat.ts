@@ -41,7 +41,7 @@ export const checkCurrentSeat = async (
   res: express.Response
 ) => {
   try {
-    const { id } = res.locals;
+    const { id: giverId } = res.locals;
     const timeAfter10Min = timeShiftedFor(10);
     const todayMidnight = midnightShiftedFor(0);
     const condition = {
