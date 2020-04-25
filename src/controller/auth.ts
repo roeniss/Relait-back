@@ -16,7 +16,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       },
     };
 
-    let isExistentUser: User | null = await User.findOne(condition);
+    const isExistentUser: User | null = await User.findOne(condition);
     const user: User = isExistentUser
       ? isExistentUser
       : await User.create(condition.where);
