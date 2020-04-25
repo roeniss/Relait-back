@@ -49,7 +49,7 @@ export const makeJwt = (user: User): Jwt => {
   const token = jwt.sign(payload, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRE,
   });
-  return "Bearer " + token;
+  return `Bearer ${token}`;
 };
 
 interface ErrorObject {
