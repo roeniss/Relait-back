@@ -46,7 +46,7 @@ export const checkCurrentSeat = async (
     const todayMidnight = midnightShiftedFor(0);
     const condition = {
       where: {
-        giverId: id,
+        giverId,
         takerId: null,
         leaveAt: {
           [Op.gte]: timeAfter10Min,
