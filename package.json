@@ -6,7 +6,7 @@
   "scripts": {
     "test": "NODE_ENV=test jest --watchAll --silent --runInBand --detectOpenHandles",
     "start": "cross-env NODE_ENV=local nodemon --delay 0 --watch src --delay 1 --exec 'ts-node' src/www.ts",
-    "start:dev": "pm2 delete --silent API && cross-env NODE_ENV=development pm2 start ./node_modules/.bin/ts-node --name API -e ./log/pm2.error.log -o ./log/pm2.out.log --log-date-format 'YYYY-MM-DD HH:mm Z' -- src/www.ts ",
+    "start:dev": "pm2 delete --silent API & cross-env NODE_ENV=development pm2 start ./node_modules/.bin/ts-node --name API -e ./log/pm2.error.log -o ./log/pm2.out.log --log-date-format 'YYYY-MM-DD HH:mm Z' -- src/www.ts ",
     "build": "webpack --config webpack.config.js"
   },
   "jest": {
