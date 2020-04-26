@@ -35,6 +35,13 @@ export const isValidUser = (
   return next();
 };
 
+/** if array, return true only when every elements are null || undefined */
+const isNullOrUndefined = (target: any): boolean => {
+  if (Array.isArray(target))
+    return target.filter(isNullOrUndefined).length === target.length;
+  else return target === null || target === undefined;
+};
+
 export const haveParamsToCreateSeat = (
   req: express.Request,
   res: express.Response,
@@ -53,16 +60,18 @@ export const haveParamsToCreateSeat = (
     // descriptionCloseTime, // optional
   } = req.body;
   if (
-    !leaveAt ??
-    !descriptionGiver ??
-    !cafeName ??
-    !spaceKakaoMapId ??
-    !address ??
-    !geoLocation ??
-    !havePlug ??
-    !thumbnailUrl ??
-    !descriptionSeat
-    // descriptionCloseTime: optional
+    !isNullOrUndefined([
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
+      // descriptionCloseTime: optional
+    ])
   ) {
     return res.sendStatus(422);
   }
@@ -87,16 +96,18 @@ export const haveParamsToUpdateSeat = (
     descriptionCloseTime,
   } = req.body;
   if (
-    leaveAt === undefined &&
-    descriptionGiver === undefined &&
-    cafeName === undefined &&
-    spaceKakaoMapId === undefined &&
-    address === undefined &&
-    geoLocation === undefined &&
-    havePlug === undefined &&
-    thumbnailUrl === undefined &&
-    descriptionSeat === undefined &&
-    descriptionCloseTime === undefined
+    !isNullOrUndefined([
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
+      descriptionCloseTime,
+    ])
   ) {
     return res.sendStatus(422);
   }
