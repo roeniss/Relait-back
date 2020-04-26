@@ -1,6 +1,7 @@
 import * as express from "express";
 import { User } from "../db";
 import { makeJwt } from "../lib/helper";
+import { FindOptions } from "sequelize";
 
 //
 // (1) login || signup
@@ -9,7 +10,7 @@ import { makeJwt } from "../lib/helper";
 export const login = async (req: express.Request, res: express.Response) => {
   try {
     const { vender, uniqueId } = req.body;
-    const condition = {
+    const condition: FindOptions = {
       where: {
         vender,
         uniqueId,
