@@ -1,6 +1,6 @@
 import * as express from "express";
 import { Seat } from "../db";
-import { Op } from "sequelize";
+import { Op, FindOptions, UpdateOptions, CreateOptions } from "sequelize";
 import { timeShiftedFor, midnightShiftedFor } from "../lib/offsetTime";
 
 //
@@ -14,7 +14,7 @@ export const getAvailableSeats = async (
   try {
     const timeAfter10Min = timeShiftedFor(10);
     const todayMidnight = midnightShiftedFor(0);
-    const condition: FindOptions  = {
+    const condition: FindOptions = {
       where: {
         seatStatus: 1,
         leaveAt: {
@@ -44,7 +44,7 @@ export const checkCurrentSeat = async (
     const { id: giverId } = res.locals;
     const timeAfter10Min = timeShiftedFor(10);
     const todayMidnight = midnightShiftedFor(0);
-    const condition: FindOptions  = {
+    const condition: FindOptions = {
       where: {
         giverId,
         takerId: null,
@@ -70,7 +70,7 @@ export const checkCurrentSeat = async (
 //
 export const getSeat = async (req: express.Request, res: express.Response) => {
   try {
-    const condition: FindOptions  = {
+    const condition: FindOptions = {
       where: {
         id: req.params.id,
       },
@@ -106,7 +106,7 @@ export const createSeat = async (
     } = req.body;
 
     // essntial parameters
-    const condition: FindOptions : any = {
+    const condition: Seat = {
       giverId: id,
       seatStatus: 1,
       leaveAt,
@@ -156,7 +156,7 @@ export const updateSeat = async (
     Object.entries(req.body).forEach(([k, v]) => {
       if (updatableData.includes(k)) dataToUpdate[k] = v;
     });
-    const condition: FindOptions  = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
         giverId: id,
@@ -193,7 +193,7 @@ export const deleteSeat = async (
     const dataToUpdate = {
       seatStatus: 9,
     };
-    const condition: FindOptions  = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
         giverId: id,
@@ -226,7 +226,7 @@ export const restoreSeat = async (
     const dataToUpdate = {
       seatStatus: 1,
     };
-    const condition: FindOptions  = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
         giverId: id,
