@@ -1,8 +1,8 @@
-openapi: '3.0.0'
+openapi: "3.0.0"
 info:
   title: "SRelait Backend API"
   description: "Relait에서 사용하는 API 리스트입니다."
-  version: "1.0.1"
+  version: "1.0.2"
   
 servers:
   - url: "http://15.165.216.17:9000/"
@@ -19,14 +19,14 @@ paths:
       tags:
       - "Auth"
       summary: "로그인 또는 회원가입"
-      description: "일치하는 정보가 없으면 자동으로 회원가입이 완료됩니다. 아래 requestBody의 요소 중 id, takerId, takenAt은 무시해주세요. 나머지는 필수입니다."
+      description: "일치하는 정보가 없으면 자동으로 회원가입이 완료됩니다."
       
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Auth'
+              $ref: "#/components/schemas/Auth"
               
       responses:
         200:
@@ -42,19 +42,26 @@ paths:
             authentificate:
               schema:
                 type: string
-              description: 'JWT 토큰'
+              description: "JWT 토큰"
         422:
           $ref: "#/components/responses/422"
 
-  /seat:
+  /seat/{page}:
     get:
       tags:
       - "Seat"
       summary: "전체 자리 정보 호출"
-      description: "take 가능한 seat들의 배열을 받아옵니다."
+      description: "take 가능한 seat들의 배열을 받아옵니다. 최대 20개 가져오며 page 값을 이용해 오프셋을 조절합니다."
       
       parameters:
         - $ref: "#/components/parameters/authentificate"
+        - in: path
+          name: path
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: "페이지 번호 (생략시 1)"
         
       responses:
         200:
@@ -75,6 +82,8 @@ paths:
           $ref: "#/components/responses/403"
         422:
           $ref: "#/components/responses/422"
+
+  /seat:
     post:
       tags:
       - "Seat"
@@ -257,7 +266,7 @@ components:
         giverId:
           type: "string"
           description: "기버 ID"
-          example: '12'
+          example: "12"
         leaveAt:
           type: "string"
           description: "기버가 자리에서 일어나기로 지정한 시간 (포맷: unix)"

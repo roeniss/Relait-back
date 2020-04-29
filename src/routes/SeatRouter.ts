@@ -8,8 +8,7 @@ import * as SeatController from "../controller/seat";
 
 const router = express.Router();
 
-
-router.get("/", isValidUser, SeatController.getAvailableSeats);
+router.get("/:page?", isValidUser, SeatController.getAvailableSeats);
 router.post(
   "/",
   isValidUser,
@@ -28,6 +27,5 @@ router.delete("/:id", isValidUser, SeatController.deleteSeat);
 router.post("/restore/:id", SeatController.restoreSeat);
 
 router.get("/haveSeat", isValidUser, SeatController.checkCurrentSeat);
-
 
 export default router;
