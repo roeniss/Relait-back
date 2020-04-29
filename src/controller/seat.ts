@@ -1,7 +1,6 @@
 import * as express from "express";
 import { Seat } from "../db";
-import { Op } from "sequelize";
-import { Jwt, decryptJwt, JwtPayload } from "../lib/helper";
+import { Op, FindOptions, UpdateOptions, CreateOptions } from "sequelize";
 import { timeShiftedFor, midnightShiftedFor } from "../lib/offsetTime";
 
 //
@@ -15,7 +14,7 @@ export const getAvailableSeats = async (
   try {
     const timeAfter10Min = timeShiftedFor(10);
     const todayMidnight = midnightShiftedFor(0);
-    const condition = {
+    const condition: FindOptions = {
       where: {
         seatStatus: 1,
         leaveAt: {
@@ -42,13 +41,12 @@ export const checkCurrentSeat = async (
   res: express.Response
 ) => {
   try {
-    const { JWT } = req.body;
-    const payload = <JwtPayload>decryptJwt(JWT);
+    const { id: giverId } = res.locals;
     const timeAfter10Min = timeShiftedFor(10);
     const todayMidnight = midnightShiftedFor(0);
-    const condition = {
+    const condition: FindOptions = {
       where: {
-        giverId: payload.id,
+        giverId,
         takerId: null,
         leaveAt: {
           [Op.gte]: timeAfter10Min,
@@ -72,7 +70,7 @@ export const checkCurrentSeat = async (
 //
 export const getSeat = async (req: express.Request, res: express.Response) => {
   try {
-    const condition = {
+    const condition: FindOptions = {
       where: {
         id: req.params.id,
       },
@@ -93,8 +91,8 @@ export const createSeat = async (
   res: express.Response
 ) => {
   try {
+    const { id } = res.locals;
     const {
-      JWT,
       leaveAt,
       descriptionGiver,
       cafeName,
@@ -107,11 +105,9 @@ export const createSeat = async (
       descriptionCloseTime,
     } = req.body;
 
-    const payload = <JwtPayload>decryptJwt(JWT);
-
     // essntial parameters
-    const condition: any = {
-      giverId: payload.id,
+    const condition: Seat = {
+      giverId: id,
       seatStatus: 1,
       leaveAt,
       descriptionGiver,
@@ -143,8 +139,7 @@ export const updateSeat = async (
   res: express.Response
 ) => {
   try {
-    const { JWT } = req.body;
-    const payload = <JwtPayload>decryptJwt(JWT);
+    const { id } = res.locals;
     const updatableData = [
       "leaveAt",
       "descriptionGiver",
@@ -161,10 +156,10 @@ export const updateSeat = async (
     Object.entries(req.body).forEach(([k, v]) => {
       if (updatableData.includes(k)) dataToUpdate[k] = v;
     });
-    const condition = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
-        giverId: payload.id,
+        giverId: id,
         seatStatus: 1,
         leaveAt: {
           [Op.gte]: timeShiftedFor(10),
@@ -194,15 +189,14 @@ export const deleteSeat = async (
   res: express.Response
 ) => {
   try {
-    const { JWT } = req.body;
-    const payload = <JwtPayload>decryptJwt(JWT);
+    const { id } = res.locals;
     const dataToUpdate = {
       seatStatus: 9,
     };
-    const condition = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
-        giverId: payload.id,
+        giverId: id,
         createdAt: {
           [Op.gte]: midnightShiftedFor(0),
         },
@@ -228,15 +222,14 @@ export const restoreSeat = async (
   res: express.Response
 ) => {
   try {
-    const { JWT } = req.body;
-    const payload = <JwtPayload>decryptJwt(JWT);
+    const { id } = res.locals;
     const dataToUpdate = {
       seatStatus: 1,
     };
-    const condition = {
+    const condition: UpdateOptions = {
       where: {
         id: req.params.id,
-        giverId: payload.id,
+        giverId: id,
         createdAt: {
           [Op.gte]: midnightShiftedFor(0),
         },

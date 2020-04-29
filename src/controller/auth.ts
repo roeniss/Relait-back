@@ -1,6 +1,7 @@
 import * as express from "express";
 import { User } from "../db";
-import { makeJwt, Jwt } from "../lib/helper";
+import { makeJwt } from "../lib/helper";
+import { FindOptions } from "sequelize";
 
 //
 // (1) login || signup
@@ -9,21 +10,22 @@ import { makeJwt, Jwt } from "../lib/helper";
 export const login = async (req: express.Request, res: express.Response) => {
   try {
     const { vender, uniqueId } = req.body;
-    const condition = {
+    const condition: FindOptions = {
       where: {
         vender,
         uniqueId,
       },
     };
 
-    let isExistentUser: User | null = await User.findOne(condition);
+    const isExistentUser: User | null = await User.findOne(condition);
     const user: User = isExistentUser
       ? isExistentUser
       : await User.create(condition.where);
     const JWT = makeJwt(user);
     const statusCode = isExistentUser ? 200 : 201;
+    res.setHeader("authorization", JWT);
     // const seat: Seat | null = await SeatController.haveSeat(JWT);
-    return res.status(statusCode).json({ JWT /* , SeatStatus */ });
+    return res.sendStatus(statusCode);
   } catch (error) {
     return res.sendStatus(500);
   }
