@@ -5,7 +5,8 @@ import { FindOptions } from "sequelize";
 
 //
 // (1) login || signup
-// (2) send token to client
+// (2) add token to headers
+// (3) return response to client
 //
 export const login = async (req: express.Request, res: express.Response) => {
   try {
