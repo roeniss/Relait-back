@@ -1,29 +1,35 @@
 import * as express from "express";
 import { Seat } from "../db";
 import { Op, FindOptions, UpdateOptions, CreateOptions } from "sequelize";
-import { timeShiftedFor, midnightShiftedFor } from "../lib/offsetTime";
+import { datetimeBeforeMin, midnightShiftedFor } from "../lib/offsetTime";
+
+//-------------------------
+//    Constant
+//-------------------------
+const SEATS_PER_PAGE = 20;
+
+//-------------------------
+//    Main Functions
+//-------------------------
 
 //
 // Get all available seats.
 // condition : registed at least after today 00:00 ~ leaved at least 10 min later
 //
 export const getAvailableSeats = async (
-  _req: express.Request,
+  req: express.Request,
   res: express.Response
 ) => {
   try {
-    const timeAfter10Min = timeShiftedFor(10);
-    const todayMidnight = midnightShiftedFor(0);
+    const [offset, limit] = _getOffsetLimit(req.params.page);
+    const timeAfter10Min = datetimeBeforeMin(10);
     const condition: FindOptions = {
       where: {
-        seatStatus: 1,
-        leaveAt: {
-          [Op.gte]: timeAfter10Min,
-        },
-        createdAt: {
-          [Op.gte]: todayMidnight,
-        },
+        takerId: null,
+        leaveAt: { [Op.gte]: timeAfter10Min },
       },
+      offset,
+      limit,
     };
     const seats: Seat[] = await Seat.findAll(condition);
     return res.status(200).json({ seats });
@@ -42,7 +48,7 @@ export const checkCurrentSeat = async (
 ) => {
   try {
     const { id: giverId } = res.locals;
-    const timeAfter10Min = timeShiftedFor(10);
+    const timeAfter10Min = datetimeBeforeMin(10);
     const todayMidnight = midnightShiftedFor(0);
     const condition: FindOptions = {
       where: {
@@ -106,7 +112,7 @@ export const createSeat = async (
     } = req.body;
 
     // essntial parameters
-    const condition: Seat = {
+    const condition: Partial<Seat> = {
       giverId: id,
       seatStatus: 1,
       leaveAt,
@@ -162,7 +168,7 @@ export const updateSeat = async (
         giverId: id,
         seatStatus: 1,
         leaveAt: {
-          [Op.gte]: timeShiftedFor(10),
+          [Op.gte]: datetimeBeforeMin(10),
         },
         createdAt: {
           [Op.gte]: midnightShiftedFor(0),
@@ -245,4 +251,15 @@ export const restoreSeat = async (
   } catch (e) {
     return res.sendStatus(500);
   }
+};
+
+//-------------------------
+//    Helpers
+//-------------------------
+
+const _getOffsetLimit = (page: string | undefined): [number, number] => {
+  if (!page) return [0, SEATS_PER_PAGE];
+  const pageNum = parseInt(page);
+  if (isNaN(pageNum)) return [0, SEATS_PER_PAGE];
+  return [(pageNum - 1) * SEATS_PER_PAGE, SEATS_PER_PAGE];
 };

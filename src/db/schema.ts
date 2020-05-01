@@ -1,4 +1,33 @@
-import { Sequelize, Model, DataTypes } from "sequelize";
+import {
+  Sequelize,
+  Model,
+  DataTypes,
+  ModelAttributes,
+  InitOptions,
+  HasManyGetAssociationsMixin,
+  HasManyAddAssociationMixin,
+  HasManyHasAssociationMixin,
+  HasManyCountAssociationsMixin,
+  HasManyCreateAssociationMixin,
+  Association,
+  Options,
+} from "sequelize";
+import * as dbConfig from "./config";
+
+//-------------------------
+//    Initialize Sequelize
+//-------------------------
+
+export const sequelize: Sequelize = new Sequelize(
+  dbConfig.DB_NAME,
+  dbConfig.DB_USER,
+  dbConfig.DB_PASSWORD,
+  <Options>dbConfig.dbOptions
+);
+
+//-------------------------
+//    Schemas
+//-------------------------
 
 export class User extends Model {
   public id!: number;
@@ -6,37 +35,48 @@ export class User extends Model {
   public vender!: number;
   public uniqueId!: string;
   public userStatus!: number;
-  public withdrawnAt!: Date;
+  public withdrawnAt!: Date | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
+  // associations
+  public getSeats!: HasManyGetAssociationsMixin<Seat>;
+  public addSeat!: HasManyAddAssociationMixin<Seat, number>;
+  public hasSeat!: HasManyHasAssociationMixin<Seat, number>;
+  public countSeats!: HasManyCountAssociationsMixin;
+  public createSeat!: HasManyCreateAssociationMixin<Seat>;
+
+  public readonly seats?: Seat[];
+  public static associations: {
+    seats: Association<User, Seat>;
+  };
+
   public static initialize(sequelize: Sequelize) {
-    this.init(
-      {
-        vender: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        uniqueId: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        userStatus: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-          defaultValue: "1",
-        },
-        withdrawnAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
+    const modelAttributes: ModelAttributes = {
+      vender: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
-      {
-        sequelize: sequelize,
-        tableName: "User",
-      }
-    );
+      uniqueId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      userStatus: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: "1",
+      },
+      withdrawnAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+    };
+    const initOptions: InitOptions<User> = {
+      sequelize,
+      tableName: "User",
+    };
+    this.init(modelAttributes, initOptions);
   }
 }
 
@@ -46,7 +86,7 @@ export class Seat extends Model {
   // about giver
   public giverId!: number;
   public leaveAt!: Date;
-  public descriptionGiver!: string;
+  public descriptionGiver!: string | null;
   public seatStatus!: number;
 
   // about cafe
@@ -55,82 +95,95 @@ export class Seat extends Model {
   public address!: string;
   public geoLocation!: string;
   public havePlug!: boolean;
-  public thumbnailUrl!: string;
+  public thumbnailUrl!: string | null;
   public descriptionSeat!: string;
-  public descriptionCloseTime!: Date;
+  public descriptionCloseTime!: Date | null;
 
-  public takerId!: number;
-  public takenAt!: Date;
+  public takerId!: number | null;
+  public takenAt!: Date | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
   public static initialize(sequelize: Sequelize) {
-    this.init(
-      {
-        giverId: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        leaveAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-        descriptionGiver: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        seatStatus: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-
-        cafeName: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        spaceKakaoMapId: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        address: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        geoLocation: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        havePlug: {
-          type: DataTypes.BOOLEAN,
-          allowNull: true,
-        },
-        thumbnailUrl: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        descriptionSeat: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        descriptionCloseTime: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-
-        takerId: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        takenAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
+    const modelAttributes: ModelAttributes = {
+      giverId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
-      {
-        sequelize: sequelize,
-        tableName: "Seat",
-      }
-    );
+      leaveAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      descriptionGiver: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      seatStatus: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+      },
+
+      cafeName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      spaceKakaoMapId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      geoLocation: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      havePlug: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
+      thumbnailUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      descriptionSeat: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      descriptionCloseTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+
+      takerId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      takenAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+    };
+    const initOptions: InitOptions<Seat> = {
+      sequelize,
+      tableName: "Seat",
+    };
+    this.init(modelAttributes, initOptions);
   }
 }
+
+//-------------------------
+//    Set Relations (for typescript)
+//-------------------------
+
+const models: Array<any> = [User, Seat];
+models.forEach((model) => model.initialize(sequelize));
+
+User.hasMany(Seat, {
+  sourceKey: "id",
+  foreignKey: "giverId",
+  as: "seats",
+});
