@@ -9,8 +9,8 @@ import { FindOrCreateOptions } from "sequelize";
 // (3) return response to client
 //
 export const login = async (req: express.Request, res: express.Response) => {
+  const { vender, uniqueId } = req.body;
   try {
-    const { vender, uniqueId } = req.body;
     const condition: FindOrCreateOptions = {
       where: {
         vender,

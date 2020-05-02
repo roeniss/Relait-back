@@ -3,14 +3,14 @@ import moment from "moment-timezone";
 const KOREAN_OFFSET = 9;
 const SEQUELIZE_FORMAT = "YYYY-MM-DD HH:mm:ss.SSS";
 
-export const datetimeBeforeMin = (minutes: number): string => {
-  const m: moment.Moment = moment();
+export const datetimeWithOffset = (minutes: number): string => {
+  const m = moment();
   m.add(minutes, "m");
   return m.format(SEQUELIZE_FORMAT);
 };
 
 export const midnightShiftedFor = (days: number): string => {
-  const m: moment.Moment = moment();
+  const m = moment();
   m.hour(0);
   m.minute(0);
   m.second(0);

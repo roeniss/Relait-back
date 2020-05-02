@@ -1,29 +1,33 @@
 import * as express from "express";
 import { Seat } from "../db";
-import { Op, FindOptions, UpdateOptions, CreateOptions } from "sequelize";
-import { datetimeBeforeMin, midnightShiftedFor } from "../lib/offsetTime";
+import {
+  Op,
+  FindOptions,
+  UpdateOptions,
+  ValidationError,
+  DestroyOptions,
+} from "sequelize";
+import { datetimeWithOffset, midnightShiftedFor } from "../lib/offsetTime";
+import moment from "moment";
 
 //-------------------------
-//    Constant
+//    Constants
 //-------------------------
 const SEATS_PER_PAGE = 20;
 
 //-------------------------
-//    Main Functions
+//    Functions
 //-------------------------
 
 //
-// Get all available seats.
-// condition : registed at least after today 00:00 ~ leaved at least 10 min later
+// Get all alive seats.
+// 200: OK
 //
-export const getAvailableSeats = async (
-  req: express.Request,
-  res: express.Response
-) => {
+export const getSeats = async (req: express.Request, res: express.Response) => {
+  const [offset, limit] = _getOffsetLimit(req.params.page);
+  const timeAfter10Min = datetimeWithOffset(10);
   try {
-    const [offset, limit] = _getOffsetLimit(req.params.page);
-    const timeAfter10Min = datetimeBeforeMin(10);
-    const condition: FindOptions = {
+    const options: FindOptions = {
       where: {
         takerId: null,
         leaveAt: { [Op.gte]: timeAfter10Min },
@@ -31,7 +35,8 @@ export const getAvailableSeats = async (
       offset,
       limit,
     };
-    const seats: Seat[] = await Seat.findAll(condition);
+    const seats = await Seat.findAll(options);
+
     return res.status(200).json({ seats });
   } catch (e) {
     return res.sendStatus(500);
@@ -39,65 +44,75 @@ export const getAvailableSeats = async (
 };
 
 //
-// If user have registered a seat, server will send its id.
-// otherwise, send 404
-//
-export const checkCurrentSeat = async (
-  req: express.Request,
-  res: express.Response
-) => {
-  try {
-    const { id: giverId } = res.locals;
-    const timeAfter10Min = datetimeBeforeMin(10);
-    const todayMidnight = midnightShiftedFor(0);
-    const condition: FindOptions = {
-      where: {
-        giverId,
-        takerId: null,
-        leaveAt: {
-          [Op.gte]: timeAfter10Min,
-        },
-        createdAt: {
-          [Op.gte]: todayMidnight,
-        },
-      },
-    };
-    const giverSeat: Seat | null = await Seat.findOne(condition);
-
-    if (giverSeat) return res.status(200).json({ seat: giverSeat });
-    else res.sendStatus(404);
-  } catch (error) {
-    return res.sendStatus(500);
-  }
-};
-
-//
 // return data of given id's seat
+// 200: OK
+// 404: Not found
 //
 export const getSeat = async (req: express.Request, res: express.Response) => {
+  const id = req.params.id;
   try {
-    const condition: FindOptions = {
-      where: {
-        id: req.params.id,
-      },
-    };
-    const seat: Seat | null = await Seat.findOne(condition);
-    if (!!seat) return res.status(200).json(seat);
-    else res.sendStatus(404);
+    const seat = await Seat.findByPk(id);
+
+    if (seat) return res.status(200).json(seat);
+    return res.sendStatus(404);
   } catch (e) {
     return res.sendStatus(500);
   }
 };
 
 //
+// If user have alive seat (give or take), return the seat
+// 200: OK (you're now giving or taking a seat)
+// 204: No content (you have no seat)
+//
+export const getStatus = async (
+  _req: express.Request,
+  res: express.Response
+) => {
+  const { id } = res.locals;
+  const timeAfter10Min = datetimeWithOffset(10);
+  try {
+    const options: FindOptions = {
+      where: {
+        [Op.or]: [{ giverId: id }, { takerId: id }],
+        leaveAt: { [Op.gte]: timeAfter10Min },
+      },
+    };
+    const seat = await Seat.findOne(options);
+
+    if (seat) return res.status(200).json(seat);
+    else res.sendStatus(204);
+  } catch (error) {
+    return res.sendStatus(500);
+  }
+};
+
+//
 // Create new Seat
+// 201: Created
+// 400: Bad request (lack of essential columns)
+// 403: Forbidden (you have some alive seat)
 //
 export const createSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
+  const { id } = res.locals;
+  const timeAfter10Min = datetimeWithOffset(10);
   try {
-    const { id } = res.locals;
+    const options: FindOptions = {
+      where: {
+        [Op.or]: [{ giverId: id }, { takerId: id }],
+        leaveAt: { [Op.gte]: timeAfter10Min },
+      },
+    };
+    const seat = await Seat.findOne(options);
+    if (seat) return res.sendStatus(403);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+
+  try {
     const {
       leaveAt,
       descriptionGiver,
@@ -111,8 +126,7 @@ export const createSeat = async (
       descriptionCloseTime,
     } = req.body;
 
-    // essntial parameters
-    const condition: Partial<Seat> = {
+    const values: Partial<Seat> = {
       giverId: id,
       seatStatus: 1,
       leaveAt,
@@ -124,96 +138,136 @@ export const createSeat = async (
       havePlug,
       thumbnailUrl,
       descriptionSeat,
+      descriptionCloseTime,
     };
-
-    // optional parameters
-    if (descriptionCloseTime)
-      condition.descriptionCloseTime = descriptionCloseTime;
-
-    const newSeat: Seat = await Seat.create(condition);
+    const newSeat = await Seat.create(values);
     return res.sendStatus(201);
   } catch (e) {
+    if (e instanceof ValidationError) return res.sendStatus(400);
     return res.sendStatus(500);
   }
 };
 
 //
-// Update new Seat
+// Update a Seat. Only alive && not taken seat can be deleted.
+// 204: No content (updated well, even nothing's changed)
+// 403: Forbidden (can't update this seat)
+// 404: Not found (no such seat)
 //
 export const updateSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
+  const giverId = res.locals.id;
+  const seatId = req.params.id;
+  const timeAfter10Min = datetimeWithOffset(10);
   try {
-    const { id } = res.locals;
-    const updatableData = [
-      "leaveAt",
-      "descriptionGiver",
-      "cafeName",
-      "spaceKakaoMapId",
-      "address",
-      "geoLocation",
-      "havePlug",
-      "thumbnailUrl",
-      "descriptionSeat",
-      "descriptionCloseTime",
-    ];
-    const dataToUpdate: any = {};
-    Object.entries(req.body).forEach(([k, v]) => {
-      if (updatableData.includes(k)) dataToUpdate[k] = v;
-    });
-    const condition: UpdateOptions = {
-      where: {
-        id: req.params.id,
-        giverId: id,
-        seatStatus: 1,
-        leaveAt: {
-          [Op.gte]: datetimeBeforeMin(10),
-        },
-        createdAt: {
-          [Op.gte]: midnightShiftedFor(0),
-        },
-      },
+    const options: FindOptions = {
+      where: { id: seatId },
+    };
+    const seat = await Seat.findOne(options);
+    if (!seat) {
+      return res.sendStatus(404);
+    } else if (
+      seat.giverId !== giverId ||
+      moment(seat.leaveAt) < moment(timeAfter10Min) ||
+      seat.takerId !== null
+    ) {
+      return res.sendStatus(403);
+    }
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+
+  try {
+    const {
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
+      descriptionCloseTime,
+    } = req.body;
+
+    const values: Partial<Seat> = {
+      leaveAt,
+      descriptionGiver,
+      cafeName,
+      spaceKakaoMapId,
+      address,
+      geoLocation,
+      havePlug,
+      thumbnailUrl,
+      descriptionSeat,
+      descriptionCloseTime,
     };
 
-    const updatedSeats: [number, Seat[]] = await Seat.update(
-      dataToUpdate,
-      condition
-    );
-    if (updatedSeats[0] === 0) res.sendStatus(404);
-    else return res.sendStatus(204);
+    const options: UpdateOptions = {
+      where: {
+        id: seatId,
+        giverId,
+        leaveAt: { [Op.gte]: timeAfter10Min },
+        takerId: null,
+      },
+      limit: 1,
+    };
+
+    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
   }
 };
 
 //
-// Delete new Seat
+// Delete a Seat. Only alive && not taken seat can be deleted.
+// 204: No content (deleted well)
+// 304: Not modified
+// 403: Forbidden (can't delete this seat)
+// 404: Not found (no such seat)
 //
 export const deleteSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
+  const giverId = res.locals.id;
+  const seatId = req.params.id;
   try {
-    const { id } = res.locals;
-    const dataToUpdate = {
-      seatStatus: 9,
-    };
-    const condition: UpdateOptions = {
+    const timeAfter10Min = datetimeWithOffset(10);
+    try {
+      const options: FindOptions = {
+        where: { id: seatId },
+      };
+      const seat = await Seat.findOne(options);
+      if (!seat) {
+        return res.sendStatus(404);
+      } else if (
+        seat.giverId !== giverId ||
+        moment(seat.leaveAt) < moment(timeAfter10Min) ||
+        seat.takerId !== null
+      ) {
+        return res.sendStatus(403);
+      }
+    } catch (e) {
+      return res.sendStatus(500);
+    }
+
+    const options: DestroyOptions = {
       where: {
-        id: req.params.id,
-        giverId: id,
-        createdAt: {
-          [Op.gte]: midnightShiftedFor(0),
-        },
+        id: seatId,
+        giverId,
+        leaveAt: { [Op.gte]: timeAfter10Min },
+        takerId: null,
       },
+      limit: 1,
     };
 
-    const deletedSeats: [number, Seat[]] = await Seat.update(
-      dataToUpdate,
-      condition
-    );
-    if (deletedSeats[0] === 0) res.sendStatus(404);
+    const deletedCnt = await Seat.destroy(options);
+    if (deletedCnt === 0) res.sendStatus(304);
     else return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
@@ -222,32 +276,20 @@ export const deleteSeat = async (
 
 //
 // Restore deleted seat (for Debugging)
+// Because of "paranoid" options (a.k.a. soft-delete),
+// this methoid just update 'deletedAt' column to NULL.
+// 204: No content (no error found)
 //
 export const restoreSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
-    const { id } = res.locals;
-    const dataToUpdate = {
-      seatStatus: 1,
-    };
-    const condition: UpdateOptions = {
-      where: {
-        id: req.params.id,
-        giverId: id,
-        createdAt: {
-          [Op.gte]: midnightShiftedFor(0),
-        },
-      },
-    };
-
-    const deletedSeats: [number, Seat[]] = await Seat.update(
-      dataToUpdate,
-      condition
-    );
-    if (deletedSeats[0] === 0) res.sendStatus(404);
-    else return res.sendStatus(204);
+    const { id } = req.params;
+    await Seat.restore({
+      where: { id },
+    });
+    return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
   }
