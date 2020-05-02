@@ -75,6 +75,7 @@ export class User extends Model {
     const initOptions: InitOptions<User> = {
       sequelize,
       tableName: "User",
+      paranoid: true,
     };
     this.init(modelAttributes, initOptions);
   }
@@ -170,13 +171,14 @@ export class Seat extends Model {
     const initOptions: InitOptions<Seat> = {
       sequelize,
       tableName: "Seat",
+      paranoid: true,
     };
     this.init(modelAttributes, initOptions);
   }
 }
 
 //-------------------------
-//    Set Relations (for typescript)
+//    Set Relations
 //-------------------------
 
 const models: Array<any> = [User, Seat];
