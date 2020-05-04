@@ -1,5 +1,5 @@
 import * as express from "express";
-import { isValidUser } from "../milddlewares/vaildation";
+import { isValidUser } from "../middlewares/vaildation";
 import * as SeatController from "../controller/seat";
 
 const router = express.Router();
