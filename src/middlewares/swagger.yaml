@@ -1,12 +1,12 @@
 openapi: "3.0.0"
 info:
-  title: "SRelait Backend API"
+  title: "Relait Backend API"
   description: "Relait에서 사용하는 API 리스트입니다."
   version: "1.0.2"
-  
+
 servers:
   - url: "http://15.165.216.17:9000/"
-  
+
 tags:
 - name: "Auth"
   description: "유저 정보"
@@ -20,14 +20,14 @@ paths:
       - "Auth"
       summary: "로그인 또는 회원가입"
       description: "일치하는 정보가 없으면 자동으로 회원가입이 완료됩니다."
-      
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/Auth"
-              
+
       responses:
         200:
           description: "로그인 성공"
@@ -52,7 +52,7 @@ paths:
       - "Seat"
       summary: "전체 자리 정보 호출"
       description: "take 가능한 seat들의 배열을 받아옵니다. 최대 20개 가져오며 page 값을 이용해 오프셋을 조절합니다."
-      
+
       parameters:
         - $ref: "#/components/parameters/authentificate"
         - in: path
@@ -62,7 +62,7 @@ paths:
             type: integer
             minimum: 1
           description: "페이지 번호 (생략시 1)"
-        
+
       responses:
         200:
           description: "[{seat1}, {seat2}, {seat3}, ...]"
@@ -89,7 +89,7 @@ paths:
       - "Seat"
       summary: "새로운 seat 등록('give')"
       description: "seat 하나를 생성합니다. (*아래 적힌 request body 중 id, takerId, takerAt은 생략해주세요)"
-      
+
       parameters:
         - $ref: "#/components/parameters/authentificate"
       requestBody:
@@ -98,7 +98,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Seat"
-            
+
       responses:
         201:
           $ref: "#/components/responses/401"
@@ -108,14 +108,14 @@ paths:
           $ref: "#/components/responses/403"
         422:
           $ref: "#/components/responses/422"
-          
+
   /haveSeat:
     get:
       tags:
       - "Seat"
       summary: "자신이 등록(give)한 게시물이 있는지 확인"
       description: "본인이 등록한(give) seat 데이터를 가져온다"
-      
+
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -125,14 +125,14 @@ paths:
           $ref: "#/components/responses/403"
         422:
           $ref: "#/components/responses/422"
-  
+
   /seat/{seatId}:
     get:
       tags:
       - "Seat"
       summary: "특정 id의 seat 정보 호출"
       description: "해당 id의 seat 정보를 가져옵니다"
-      
+
       parameters:
         - $ref: "#/components/parameters/authentificate"
         - in: path
@@ -141,7 +141,7 @@ paths:
             type: integer
           required: true
           description: "seat 게시물 id"
-          
+
       responses:
         200:
           description: "{seat}"
@@ -160,7 +160,7 @@ paths:
       - "Seat"
       summary: "특정 id의 seat 정보 수정 (giver만 가능)"
       description: "해당 id의 seat 정보를 수정합니다. (*다음 항목 중 한 개 이상이 body에 있으면 됩니다: **leaveAt, descriptionGiver, cafeName, spaceKakaoMapId, address, geoLocation, havePlug, thumbnailUrl, descriptionSeat, descriptionCloseTime**)"
-      
+
       parameters:
         - $ref: "#/components/parameters/authentificate"
         - in: path
@@ -175,7 +175,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Seat"
-          
+
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -192,7 +192,7 @@ paths:
       - "Seat"
       summary: "특정 id의 seat 삭제"
       description: "해당 id의 seat를 삭제합니다."
-      
+
       parameters:
         - $ref: "#/components/parameters/authentificate"
         - in: path
@@ -201,7 +201,7 @@ paths:
             type: integer
           required: true
           description: "seat 게시물 id"
-          
+
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -212,15 +212,15 @@ paths:
         404:
           $ref: "#/components/responses/404"
         422:
-          $ref: "#/components/responses/422"    
-    
+          $ref: "#/components/responses/422"
+
   /restore/{seatId}:
     post:
       tags:
       - "Seat"
       summary: "특정 id의 seat 삭제를 취소 (복구) for debugging"
       description: "삭제된 id의 seat를 복구합니다 for debugging"
-      
+
       parameters:
         - in: path
           name: seatId
@@ -228,7 +228,7 @@ paths:
             type: integer
           required: true
           description: "seat 게시물 id"
-          
+
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -239,8 +239,8 @@ paths:
         404:
           $ref: "#/components/responses/404"
         422:
-          $ref: "#/components/responses/422"    
-          
+          $ref: "#/components/responses/422"
+
 components:
   schemas:
     Auth:
@@ -319,7 +319,7 @@ components:
           type: "string"
           description: "테이커가 자리를 택한 시간 (포맷: unix)"
           example: "1587550606"
-          
+
   parameters:
     authentificate:
       in: header
@@ -328,7 +328,7 @@ components:
         type: string
       required: true
       description: "JWT 토큰 (type: Bearer)"
-      
+
   responses:
     201:
       description: "Created - 등록 성공"
