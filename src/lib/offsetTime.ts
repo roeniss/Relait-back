@@ -1,12 +1,12 @@
-import moment from "moment-timezone";
+import moment, { Moment } from "moment-timezone";
 // moment.tz.setDefault("Asia/Seoul");
 const KOREAN_OFFSET = 9;
 const SEQUELIZE_FORMAT = "YYYY-MM-DD HH:mm:ss.SSS";
 
-export const datetimeWithOffset = (minutes: number): string => {
+export const dateWithOffset = (minutes: number): Date => {
   const m = moment();
   m.add(minutes, "m");
-  return m.format(SEQUELIZE_FORMAT);
+  return m.toDate();
 };
 
 export const midnightShiftedFor = (days: number): string => {

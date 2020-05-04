@@ -7,7 +7,7 @@ import {
   ValidationError,
   DestroyOptions,
 } from "sequelize";
-import { datetimeWithOffset, midnightShiftedFor } from "../lib/offsetTime";
+import { dateWithOffset, midnightShiftedFor } from "../lib/offsetTime";
 import moment from "moment";
 
 //-------------------------
@@ -25,7 +25,7 @@ const SEATS_PER_PAGE = 20;
 //
 export const getSeats = async (req: express.Request, res: express.Response) => {
   const [offset, limit] = _getOffsetLimit(req.params.page);
-  const timeAfter10Min = datetimeWithOffset(10);
+  const timeAfter10Min = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
@@ -69,8 +69,8 @@ export const getStatus = async (
   _req: express.Request,
   res: express.Response
 ) => {
-  const { id } = res.locals;
-  const timeAfter10Min = datetimeWithOffset(10);
+  const { id } = res.locals; // userId
+  const timeAfter10Min = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
@@ -97,8 +97,8 @@ export const createSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { id } = res.locals;
-  const timeAfter10Min = datetimeWithOffset(10);
+  const { id } = res.locals; // userId
+  const timeAfter10Min = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
@@ -158,9 +158,9 @@ export const updateSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const giverId = res.locals.id;
+  const userId = res.locals.id;
   const seatId = req.params.id;
-  const timeAfter10Min = datetimeWithOffset(10);
+  const timeAfter10Min = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: { id: seatId },
@@ -169,8 +169,8 @@ export const updateSeat = async (
     if (!seat) {
       return res.sendStatus(404);
     } else if (
-      seat.giverId !== giverId ||
-      moment(seat.leaveAt) < moment(timeAfter10Min) ||
+      seat.giverId !== userId ||
+      seat.leaveAt.getTime() < timeAfter10Min.getTime() ||
       seat.takerId !== null
     ) {
       return res.sendStatus(403);
@@ -209,7 +209,7 @@ export const updateSeat = async (
     const options: UpdateOptions = {
       where: {
         id: seatId,
-        giverId,
+        giverId: userId,
         leaveAt: { [Op.gte]: timeAfter10Min },
         takerId: null,
       },
@@ -217,6 +217,7 @@ export const updateSeat = async (
     };
 
     const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
@@ -234,10 +235,10 @@ export const deleteSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const giverId = res.locals.id;
+  const userId = res.locals.id;
   const seatId = req.params.id;
   try {
-    const timeAfter10Min = datetimeWithOffset(10);
+    const timeAfter10Min = dateWithOffset(10);
     try {
       const options: FindOptions = {
         where: { id: seatId },
@@ -246,8 +247,8 @@ export const deleteSeat = async (
       if (!seat) {
         return res.sendStatus(404);
       } else if (
-        seat.giverId !== giverId ||
-        moment(seat.leaveAt) < moment(timeAfter10Min) ||
+        seat.giverId !== userId ||
+        seat.leaveAt.getTime() < timeAfter10Min.getTime() ||
         seat.takerId !== null
       ) {
         return res.sendStatus(403);
@@ -259,7 +260,7 @@ export const deleteSeat = async (
     const options: DestroyOptions = {
       where: {
         id: seatId,
-        giverId,
+        giverId: userId,
         leaveAt: { [Op.gte]: timeAfter10Min },
         takerId: null,
       },
@@ -273,6 +274,112 @@ export const deleteSeat = async (
     return res.sendStatus(500);
   }
 };
+
+//
+// take a alive(not taken) seat
+// 204: No content (take well)
+// 403: Forbidden (can't take this seat -- e.g. taken by someone else)
+// 404: Not found (no such seat)
+//
+export const takeSeat = async (req: express.Request, res: express.Response) => {
+  const userId = res.locals.id;
+  const seatId = req.params.id;
+  const timeAfter10Min = dateWithOffset(10);
+  try {
+    const options: FindOptions = {
+      where: { id: seatId },
+    };
+    const seat = await Seat.findOne(options);
+    if (!seat) {
+      return res.sendStatus(404);
+    } else if (
+      seat.giverId === userId ||
+      seat.leaveAt.getTime() < timeAfter10Min.getTime() ||
+      seat.takerId !== null
+    ) {
+      return res.sendStatus(403);
+    }
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+
+  try {
+    const timeNow = dateWithOffset(0);
+    const values: Partial<Seat> = {
+      takerId: userId,
+      takenAt: timeNow,
+    };
+
+    const options: UpdateOptions = {
+      where: {
+        id: seatId,
+        leaveAt: { [Op.gte]: timeAfter10Min },
+        takerId: null,
+      },
+      limit: 1,
+    };
+
+    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    if (updatedCnt === 0) return res.sendStatus(403);
+    return res.sendStatus(204);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+//
+// cancel the previous reservation(take action) of the user
+// 204: No content (cancel well)
+// 403: Forbidden (can't take this seat -- e.g. taken by someone else)
+// 404: Not found (no such seat)
+//
+export const cancelTakeSeat = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const userId = res.locals.id;
+  const seatId = req.params.id;
+  const timeAfter10Min = dateWithOffset(10);
+  try {
+    const options: FindOptions = {
+      where: { id: seatId },
+    };
+    const seat = await Seat.findOne(options);
+    if (!seat) {
+      return res.sendStatus(404);
+    } else if (
+      seat.leaveAt.getTime() < timeAfter10Min.getTime() ||
+      seat.takerId !== userId
+    ) {
+      return res.sendStatus(403);
+    }
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+
+  try {
+    const values: Partial<Seat> = {
+      takerId: null,
+      takenAt: null,
+    };
+    const options: UpdateOptions = {
+      where: {
+        id: seatId,
+        leaveAt: { [Op.gte]: timeAfter10Min },
+        takerId: userId,
+      },
+      limit: 1,
+    };
+
+    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    if (updatedCnt === 0) return res.sendStatus(403);
+    return res.sendStatus(204);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+// ----------------- below: for debug
 
 //
 // Restore deleted seat (for Debugging)
