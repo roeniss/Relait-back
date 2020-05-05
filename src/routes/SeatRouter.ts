@@ -4,7 +4,7 @@ import * as SeatController from "../controller/seat";
 
 const router = express.Router();
 
-router.get("/:page?", isValidUser, SeatController.getSeats);
+router.get("/", isValidUser, SeatController.getSeats);
 router.get("/:id", isValidUser, SeatController.getSeat);
 router.get("/status", isValidUser, SeatController.getStatus);
 
