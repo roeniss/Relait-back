@@ -23,7 +23,7 @@ const dbOptions: Options = {
   },
   logging: (...msg: any) =>
     console.log(
-      `📘[Sequelize] 
+      `📘[Sequelize]
   ㄴ${msg[0]}`
     ),
 };
