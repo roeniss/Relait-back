@@ -8,4 +8,7 @@ const router: express.Router = express.Router();
 
 router.post("/login", hasValidLoginBody, AuthController.login);
 
+// ----------------- below: for debug
+router.delete("/", AuthController.deleteUser);
+
 export default router;

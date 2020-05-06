@@ -377,6 +377,17 @@ export const cancelTakeSeat = async (
   }
 };
 
+//-------------------------
+//    Helpers
+//-------------------------
+
+const _getOffsetLimit = (page: string | undefined): [number, number] => {
+  if (!page) return [0, SEATS_PER_PAGE];
+  const pageNum = parseInt(page);
+  if (isNaN(pageNum)) return [0, SEATS_PER_PAGE];
+  return [(pageNum - 1) * SEATS_PER_PAGE, SEATS_PER_PAGE];
+};
+
 // ----------------- below: for debug
 
 //
@@ -398,15 +409,4 @@ export const restoreSeat = async (
   } catch (e) {
     return res.sendStatus(500);
   }
-};
-
-//-------------------------
-//    Helpers
-//-------------------------
-
-const _getOffsetLimit = (page: string | undefined): [number, number] => {
-  if (!page) return [0, SEATS_PER_PAGE];
-  const pageNum = parseInt(page);
-  if (isNaN(pageNum)) return [0, SEATS_PER_PAGE];
-  return [(pageNum - 1) * SEATS_PER_PAGE, SEATS_PER_PAGE];
 };

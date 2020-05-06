@@ -43,6 +43,19 @@ paths:
               schema:
                 type: string
               description: "JWT 토큰"
+  /user:
+    delete:
+      tags:
+      - "Auth"
+      summary: "계정 삭제 및 헤더 삭제 for debugging"
+      description: "현재 로그인한 유저의 정보를 삭제합니다 for debugging (카카오 인증 정보는 삭제하지 않고, 릴레잇 DB에서만 삭제합니다. 바꿔말하자면 카카오 DB에는 계정 정보가 남아있습니다)"
+
+      parameters:
+        - $ref: "#/components/parameters/authentificate"
+
+      responses:
+        204:
+          description: "계정 삭제 성공 (500 외의 모든 경우)"
 
   /seat:
     get:
