@@ -354,11 +354,16 @@ components:
           required: false
           description: "가게 주소"
           example: "서울 서대문구 이화여대길 34"
-        geoLocation:
-          type: "string"
+        lat:
+          type: "number"
           required: false
-          description: "위경도 정보('북위:동경')"
-          example: "37.558435:126.945898"
+          description: "위도(latitude)"
+          example: "37.558435"
+        lng:
+          type: "number"
+          required: false
+          description: "경도"
+          example: "126.945898"
         havePlug:
           type: "string"
           required: false

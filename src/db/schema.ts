@@ -11,6 +11,10 @@ import {
   HasManyCreateAssociationMixin,
   Association,
   Options,
+  FindOptions,
+  Order,
+  WhereOperators,
+  Op,
 } from "sequelize";
 import * as dbConfig from "./config";
 
@@ -94,7 +98,8 @@ export class Seat extends Model {
   public cafeName!: string;
   public spaceKakaoMapId!: string;
   public address!: string;
-  public geoLocation!: string;
+  public lat!: number | null;
+  public lng!: number | null;
   public havePlug!: boolean;
   public thumbnailUrl!: string | null;
   public descriptionSeat!: string;
@@ -138,8 +143,12 @@ export class Seat extends Model {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      geoLocation: {
-        type: DataTypes.STRING,
+      lat: {
+        type: DataTypes.FLOAT(10, 4),
+        allowNull: false,
+      },
+      lng: {
+        type: DataTypes.FLOAT(10, 4),
         allowNull: false,
       },
       havePlug: {
@@ -174,6 +183,25 @@ export class Seat extends Model {
       paranoid: true,
     };
     this.init(modelAttributes, initOptions);
+  }
+
+  //
+  // custom utils
+  //
+  public static sortByDistance(lat: string, lng: string): Order {
+    return [
+      [
+        Sequelize.literal(`
+          ACOS(SIN(${lat || 0})*SIN(lat) +
+          COS(${lat || 0})*COS(lat)*COS((${lng || 0}-lng)))
+        `),
+        "ASC",
+      ],
+    ];
+  }
+
+  public static laterThan(datetime: Date): WhereOperators {
+    return { [Op.gte]: datetime };
   }
 }
 

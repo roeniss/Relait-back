@@ -6,6 +6,7 @@ import {
   UpdateOptions,
   ValidationError,
   DestroyOptions,
+  literal,
 } from "sequelize";
 import { dateWithOffset } from "../lib/offsetTime";
 
@@ -23,14 +24,16 @@ const SEATS_PER_PAGE = 20;
 // 200: OK
 //
 export const getSeats = async (req: express.Request, res: express.Response) => {
-  const [offset, limit] = _getOffsetLimit(req.query.page);
+  const { page, lat, lng } = req.query;
+  const [offset, limit] = _getOffsetLimit(page);
   const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
         takerId: null,
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.laterThan(dateTenMinLater),
       },
+      order: Seat.sortByDistance(lat, lng),
       offset,
       limit,
     };
@@ -118,7 +121,8 @@ export const createSeat = async (
       cafeName,
       spaceKakaoMapId,
       address,
-      geoLocation,
+      lat,
+      lng,
       havePlug,
       thumbnailUrl,
       descriptionSeat,
@@ -133,7 +137,8 @@ export const createSeat = async (
       cafeName,
       spaceKakaoMapId,
       address,
-      geoLocation,
+      lat,
+      lng,
       havePlug,
       thumbnailUrl,
       descriptionSeat,
@@ -185,7 +190,8 @@ export const updateSeat = async (
       cafeName,
       spaceKakaoMapId,
       address,
-      geoLocation,
+      lat,
+      lng,
       havePlug,
       thumbnailUrl,
       descriptionSeat,
@@ -198,7 +204,8 @@ export const updateSeat = async (
       cafeName,
       spaceKakaoMapId,
       address,
-      geoLocation,
+      lat,
+      lng,
       havePlug,
       thumbnailUrl,
       descriptionSeat,
