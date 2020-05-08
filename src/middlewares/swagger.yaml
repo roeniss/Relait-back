@@ -55,7 +55,14 @@ paths:
 
       responses:
         204:
-          description: "계정 삭제 성공 (500 외의 모든 경우)"
+          description: "계정 삭제 성공"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        404:
+          $ref: "#/components/responses/404"
+
 
   /seat:
     get:

@@ -17,6 +17,11 @@ import {
   Op,
 } from "sequelize";
 import * as dbConfig from "./config";
+import { dateWithOffset } from "../lib/offsetTime";
+
+//-------------------------
+//    Initialize Sequelize
+//-------------------------
 
 //-------------------------
 //    Initialize Sequelize
@@ -186,22 +191,37 @@ export class Seat extends Model {
   }
 
   //
-  // custom utils
+  // custom methods
   //
-  public static sortByDistance(lat: string, lng: string): Order {
+  public static orderByDistance(lat: string, lng: string): Order {
     return [
       [
         Sequelize.literal(`
-          ACOS(SIN(${lat || 0})*SIN(lat) +
-          COS(${lat || 0})*COS(lat)*COS((${lng || 0}-lng)))
+          ACOS(SIN(${lat ?? 0})*SIN(lat) +
+          COS(${lat ?? 0})*COS(lat)*COS((${lng ?? 0}-lng)))
         `),
         "ASC",
       ],
     ];
   }
 
-  public static laterThan(datetime: Date): WhereOperators {
-    return { [Op.gte]: datetime };
+  public static whereLaterThan(minute: number): WhereOperators {
+    return { [Op.gte]: dateWithOffset(minute) };
+  }
+
+  public isTakenBy(id: string | number | null): boolean {
+    return id ? this.takerId === Number(id) : this.takerId === null;
+  }
+
+  public isGivenBy(id: string | number | null): boolean {
+    return id ? this.giverId === Number(id) : this.giverId === null;
+  }
+
+  public leftMinuteToLeave(): number {
+    const currentDate = dateWithOffset(0);
+    return Math.floor(
+      (currentDate.getTime() - this.leaveAt.getTime()) / (1000 * 60)
+    );
   }
 }
 

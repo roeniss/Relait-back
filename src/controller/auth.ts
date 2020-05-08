@@ -32,31 +32,22 @@ export const login = async (req: express.Request, res: express.Response) => {
 
 //
 // Delete current user from database (for Debugging)
-// If not logged in, just return 204.
-// 204: No content (no error found)
+// 204: No content (well deleted)
+// 404: Not found
 //
 export const deleteUser = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { authorization } = req.headers;
-  // 토큰이 없음
-  if (!authorization || authorization.split(" ").length < 2)
-    return res.sendStatus(204);
-  const [type, JWT] = authorization.split(" ");
-  // 토큰의 타입이 비정상
-  if (type !== "Bearer") return res.sendStatus(204);
-  const payload: JwtPayload | null = decryptJwt(JWT);
-  // 토큰 자체가 비정상
-  if (!payload) return res.sendStatus(204);
-
+  const { id } = res.locals;
   const options: DestroyOptions = {
-    where: { id: payload.id },
+    where: { id },
   };
 
   // 토큰 내용을 저장
   try {
     const deletedNum = await User.destroy(options);
+    if (deletedNum === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);

@@ -6,14 +6,15 @@ import {
   UpdateOptions,
   ValidationError,
   DestroyOptions,
-  literal,
+  RestoreOptions,
 } from "sequelize";
 import { dateWithOffset } from "../lib/offsetTime";
 
 //-------------------------
-//    Constants
+//    Constants (policy)
 //-------------------------
 const SEATS_PER_PAGE = 20;
+const UPDATE_ALLOW_MINUTE = 10; // scale : minute
 
 //-------------------------
 //    Functions
@@ -26,14 +27,13 @@ const SEATS_PER_PAGE = 20;
 export const getSeats = async (req: express.Request, res: express.Response) => {
   const { page, lat, lng } = req.query;
   const [offset, limit] = _getOffsetLimit(page);
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
         takerId: null,
-        leaveAt: Seat.laterThan(dateTenMinLater),
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
       },
-      order: Seat.sortByDistance(lat, lng),
+      order: Seat.orderByDistance(lat, lng),
       offset,
       limit,
     };
@@ -72,12 +72,11 @@ export const getStatus = async (
   res: express.Response
 ) => {
   const { id } = res.locals; // userId
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
         [Op.or]: [{ giverId: id }, { takerId: id }],
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
       },
     };
     const seat = await Seat.findOne(options);
@@ -100,12 +99,11 @@ export const createSeat = async (
   res: express.Response
 ) => {
   const { id } = res.locals; // userId
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: {
         [Op.or]: [{ giverId: id }, { takerId: id }],
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
       },
     };
     const seat = await Seat.findOne(options);
@@ -164,7 +162,6 @@ export const updateSeat = async (
 ) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: { id: seatId },
@@ -173,9 +170,9 @@ export const updateSeat = async (
     if (!seat) {
       return res.sendStatus(404);
     } else if (
-      seat.giverId !== userId ||
-      seat.leaveAt.getTime() < dateTenMinLater.getTime() ||
-      seat.takerId !== null
+      !seat.isGivenBy(userId) ||
+      !seat.isTakenBy(null) ||
+      seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE
     ) {
       return res.sendStatus(403);
     }
@@ -216,7 +213,7 @@ export const updateSeat = async (
       where: {
         id: seatId,
         giverId: userId,
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
         takerId: null,
       },
       limit: 1,
@@ -243,7 +240,6 @@ export const deleteSeat = async (
   const userId = res.locals.id;
   const seatId = req.params.id;
   try {
-    const dateTenMinLater = dateWithOffset(10);
     try {
       const options: FindOptions = {
         where: { id: seatId },
@@ -252,9 +248,9 @@ export const deleteSeat = async (
       if (!seat) {
         return res.sendStatus(404);
       } else if (
-        seat.giverId !== userId ||
-        seat.leaveAt.getTime() < dateTenMinLater.getTime() ||
-        seat.takerId !== null
+        !seat.isGivenBy(userId) ||
+        !seat.isTakenBy(null) ||
+        seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE
       ) {
         return res.sendStatus(403);
       }
@@ -266,7 +262,7 @@ export const deleteSeat = async (
       where: {
         id: seatId,
         giverId: userId,
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
         takerId: null,
       },
       limit: 1,
@@ -289,7 +285,6 @@ export const deleteSeat = async (
 export const takeSeat = async (req: express.Request, res: express.Response) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: { id: seatId },
@@ -298,9 +293,9 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
     if (!seat) {
       return res.sendStatus(404);
     } else if (
-      seat.giverId === userId ||
-      seat.leaveAt.getTime() < dateTenMinLater.getTime() ||
-      seat.takerId !== null
+      seat.isGivenBy(userId) ||
+      !seat.isTakenBy(null) ||
+      seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE
     ) {
       return res.sendStatus(403);
     }
@@ -318,7 +313,7 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
     const options: UpdateOptions = {
       where: {
         id: seatId,
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
         takerId: null,
       },
       limit: 1,
@@ -344,7 +339,6 @@ export const cancelTakeSeat = async (
 ) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
-  const dateTenMinLater = dateWithOffset(10);
   try {
     const options: FindOptions = {
       where: { id: seatId },
@@ -353,8 +347,8 @@ export const cancelTakeSeat = async (
     if (!seat) {
       return res.sendStatus(404);
     } else if (
-      seat.leaveAt.getTime() < dateTenMinLater.getTime() ||
-      seat.takerId !== userId
+      seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE ||
+      !seat.isTakenBy(userId)
     ) {
       return res.sendStatus(403);
     }
@@ -370,7 +364,7 @@ export const cancelTakeSeat = async (
     const options: UpdateOptions = {
       where: {
         id: seatId,
-        leaveAt: { [Op.gte]: dateTenMinLater },
+        leaveAt: Seat.whereLaterThan(UPDATE_ALLOW_MINUTE),
         takerId: userId,
       },
       limit: 1,
@@ -407,11 +401,12 @@ export const restoreSeat = async (
   req: express.Request,
   res: express.Response
 ) => {
+  const { id } = req.params;
   try {
-    const { id } = req.params;
-    await Seat.restore({
+    const options: RestoreOptions = {
       where: { id },
-    });
+    };
+    await Seat.restore(options);
     return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
