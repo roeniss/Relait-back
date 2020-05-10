@@ -44,7 +44,6 @@ export class User extends Model {
   public vender!: number;
   public uniqueId!: string;
   public userStatus!: number;
-  public withdrawnAt!: Date | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -75,10 +74,6 @@ export class User extends Model {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: "1",
-      },
-      withdrawnAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
       },
     };
     const initOptions: InitOptions<User> = {
