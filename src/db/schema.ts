@@ -11,8 +11,17 @@ import {
   HasManyCreateAssociationMixin,
   Association,
   Options,
+  FindOptions,
+  Order,
+  WhereOperators,
+  Op,
 } from "sequelize";
 import * as dbConfig from "./config";
+import { dateWithOffset } from "../lib/offsetTime";
+
+//-------------------------
+//    Initialize Sequelize
+//-------------------------
 
 //-------------------------
 //    Initialize Sequelize
@@ -75,6 +84,7 @@ export class User extends Model {
     const initOptions: InitOptions<User> = {
       sequelize,
       tableName: "User",
+      paranoid: true,
     };
     this.init(modelAttributes, initOptions);
   }
@@ -93,7 +103,8 @@ export class Seat extends Model {
   public cafeName!: string;
   public spaceKakaoMapId!: string;
   public address!: string;
-  public geoLocation!: string;
+  public lat!: number | null;
+  public lng!: number | null;
   public havePlug!: boolean;
   public thumbnailUrl!: string | null;
   public descriptionSeat!: string;
@@ -137,8 +148,12 @@ export class Seat extends Model {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      geoLocation: {
-        type: DataTypes.STRING,
+      lat: {
+        type: DataTypes.FLOAT(10, 4),
+        allowNull: false,
+      },
+      lng: {
+        type: DataTypes.FLOAT(10, 4),
         allowNull: false,
       },
       havePlug: {
@@ -170,13 +185,48 @@ export class Seat extends Model {
     const initOptions: InitOptions<Seat> = {
       sequelize,
       tableName: "Seat",
+      paranoid: true,
     };
     this.init(modelAttributes, initOptions);
+  }
+
+  //
+  // custom methods
+  //
+  public static orderByDistance(lat: string, lng: string): Order {
+    return [
+      [
+        Sequelize.literal(`
+          ACOS(SIN(${lat ?? 0})*SIN(lat) +
+          COS(${lat ?? 0})*COS(lat)*COS((${lng ?? 0}-lng)))
+        `),
+        "ASC",
+      ],
+    ];
+  }
+
+  public static whereLaterThan(minute: number): WhereOperators {
+    return { [Op.gte]: dateWithOffset(minute) };
+  }
+
+  public isTakenBy(id: string | number | null): boolean {
+    return id ? this.takerId === Number(id) : this.takerId === null;
+  }
+
+  public isGivenBy(id: string | number | null): boolean {
+    return id ? this.giverId === Number(id) : this.giverId === null;
+  }
+
+  public leftMinuteToLeave(): number {
+    const currentDate = dateWithOffset(0);
+    return Math.floor(
+      (currentDate.getTime() - this.leaveAt.getTime()) / (1000 * 60)
+    );
   }
 }
 
 //-------------------------
-//    Set Relations (for typescript)
+//    Set Relations
 //-------------------------
 
 const models: Array<any> = [User, Seat];
