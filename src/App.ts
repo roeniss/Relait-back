@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { errorHandling, customLogger, swagger } from "./milddlewares";
+import { errorHandling, customLogger, swagger } from "./middlewares";
 import routers from "./routes";
 
 class App {

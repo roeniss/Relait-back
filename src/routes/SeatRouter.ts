@@ -1,31 +1,21 @@
 import * as express from "express";
-import {
-  isValidUser,
-  haveParamsToCreateSeat,
-  haveParamsToUpdateSeat,
-} from "../milddlewares/vaildation";
+import { isValidUser } from "../middlewares/vaildation";
 import * as SeatController from "../controller/seat";
 
 const router = express.Router();
 
-router.get("/:page?", isValidUser, SeatController.getAvailableSeats);
-router.post(
-  "/",
-  isValidUser,
-  haveParamsToCreateSeat,
-  SeatController.createSeat
-);
-
+router.get("/", isValidUser, SeatController.getSeats);
 router.get("/:id", isValidUser, SeatController.getSeat);
-router.patch(
-  "/:id",
-  isValidUser,
-  haveParamsToUpdateSeat,
-  SeatController.updateSeat
-);
-router.delete("/:id", isValidUser, SeatController.deleteSeat);
-router.post("/restore/:id", SeatController.restoreSeat);
+router.get("/status", isValidUser, SeatController.getStatus);
 
-router.get("/haveSeat", isValidUser, SeatController.checkCurrentSeat);
+router.post("/", isValidUser, SeatController.createSeat);
+router.put("/:id", isValidUser, SeatController.updateSeat);
+router.delete("/:id", isValidUser, SeatController.deleteSeat);
+
+router.get("/take/:id", isValidUser, SeatController.takeSeat);
+router.delete("/take/:id", isValidUser, SeatController.cancelTakeSeat);
+
+// ----------------- below: for debug
+router.post("/restore/:id", SeatController.restoreSeat);
 
 export default router;
