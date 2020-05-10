@@ -54,8 +54,7 @@ const cafeStore = [
     address: "서울 서대문구 명물길 2",
     lat: 37.5571526,
     lng: 126.9353874,
-    thumbnailUrl:
-      "https://img1.daumcdn.net/thumb/T736x736.q70/?fname=http%3A%2F%2Ft1.daumcdn.net%2Fplace%2F9D0AB7C358024DDB83EE2EB323358C64",
+    thumbnailUrl: null,
   },
   {
     cafeName: "커피DZ 신촌점",
@@ -72,8 +71,7 @@ const cafeStore = [
     address: "서울 서대문구 연세로5길 28",
     lat: 37.5571526,
     lng: 126.9353874,
-    thumbnailUrl:
-      "https://img1.daumcdn.net/thumb/T736x736.q70/?fname=http%3A%2F%2Ft1.daumcdn.net%2Fplace%2F043FE0F90C034C939E39FA6698FADF1B",
+    thumbnailUrl: null,
   },
   {
     cafeName: "더파이홀",
