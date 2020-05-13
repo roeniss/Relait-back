@@ -8,10 +8,10 @@ if (process.env.NODE_ENV === "prod") {
     let deletedId: number;
     User.bulkCreate(userSeed)
       .then((users) => {
-        deletedId = users[users.length - 1].id;
-        users[users.length - 1].destroy();
+        const lastUser = users.pop();
+        if (lastUser) lastUser.destroy();
       })
-      .then((_) => Seat.bulkCreate(seatSeed))
+      .then(() => Seat.bulkCreate(seatSeed))
       .then((seats) => {
         seats.forEach((seat) => {
           if (seat.giverId === deletedId || seat.takerId === deletedId)
