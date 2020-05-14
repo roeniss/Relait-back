@@ -1,15 +1,55 @@
-import "source-map-support/register"; // for source-map
-import "../env"; // dotenv root
-import App from "./App";
-import * as express from "express";
+import "../env";
+import app from "./App";
+import { moment } from "./lib";
 
-const port: number = Number(process.env.PORT) || 9000;
-const app: express.Application = new App().app;
+// -----------------------------
+//  check env variables
+// -----------------------------
+const _checkEnvVars = () => {
+  const {
+    DB_NAME,
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    DB_DIALECT,
+    JWT_EXPIRE,
+    JWT_SECRET,
+  } = process.env;
 
-if (process.env.NODE_ENV !== "test") {
+  [
+    DB_NAME,
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    DB_DIALECT,
+    JWT_EXPIRE,
+    JWT_SECRET,
+  ].forEach((envVal) => {
+    if (!envVal) {
+      console.error(`${envVal} should be specified`);
+      process.exit(1);
+    }
+  });
+};
+
+_checkEnvVars();
+
+// -----------------------------
+//  init server
+// -----------------------------
+const port = Number(process.env.PORT) || 9000;
+const { NODE_ENV } = process.env;
+
+if (NODE_ENV === "local" || NODE_ENV === "development") {
   app
-    .listen(port, () =>
-      console.log(`Express server listening at ${port} (${new Date()})`)
-    )
+    .listen(port, () => {
+      const curDate = moment().toDate();
+      console.log(`Express server listening at ${port} (${curDate})`);
+    })
     .on("error", (err) => console.error(err));
+} else if (NODE_ENV === "production") {
+  // TODO: TBD
+} else {
+  console.error(`'NODE_ENV' env value is unprocessable: ${NODE_ENV}`);
+  process.exit(1);
 }

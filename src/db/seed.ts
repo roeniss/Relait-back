@@ -1,8 +1,5 @@
 import { User, Seat } from "./schema";
-import moment, { Moment } from "moment-timezone";
-moment.tz.setDefault("Asia/Seoul");
-const KOREAN_OFFSET = 9;
-const SEQUELIZE_FORMAT = "YYYY-MM-DD HH:mm:ss.SSS";
+import { moment } from "../lib";
 
 //
 // make dummy users

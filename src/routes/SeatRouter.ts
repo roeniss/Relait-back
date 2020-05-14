@@ -1,8 +1,10 @@
-import * as express from "express";
-import { isValidUser } from "../middlewares/vaildation";
+import express from "express";
+import { validators } from "../middlewares";
 import * as SeatController from "../controller/seat";
 
 const router = express.Router();
+
+const { isValidUser } = validators;
 
 router.get("/", isValidUser, SeatController.getSeats);
 router.get("/:id", isValidUser, SeatController.getSeat);

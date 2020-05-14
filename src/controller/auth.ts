@@ -1,6 +1,6 @@
-import * as express from "express";
+import express from "express";
 import { User } from "../db";
-import { makeJwt, JwtPayload, decryptJwt } from "../lib/helper";
+import { jwtOperator } from "../lib";
 import { FindOrCreateOptions, DestroyOptions } from "sequelize";
 
 //
@@ -19,7 +19,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     };
 
     const [user, created] = await User.findOrCreate(condition);
-    const JWT = makeJwt(user);
+    const JWT = jwtOperator.encryptBearerToken(user);
     res.setHeader("authorization", JWT);
     const statusCode = created ? 201 : 200;
     return res.sendStatus(statusCode);
@@ -36,7 +36,7 @@ export const login = async (req: express.Request, res: express.Response) => {
 // 404: Not found
 //
 export const deleteUser = async (
-  req: express.Request,
+  _req: express.Request,
   res: express.Response
 ) => {
   const { id } = res.locals;
