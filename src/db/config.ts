@@ -23,10 +23,16 @@ const dbOptions: Options = {
   },
   logging: (sql) => {
     console.log(
+<<<<<<< HEAD
+      `📘[Sequelize]
+  ㄴ${msg[0]}`
+    ),
+=======
       `📘[Sequelize] 
   ㄴ${sql}`
     );
   },
+>>>>>>> b66fa5fe5e5e659e4544873358fa75c26982603a
 };
 
 export { DB_NAME, DB_PASSWORD, DB_USER, dbOptions };
