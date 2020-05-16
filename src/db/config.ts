@@ -1,4 +1,4 @@
-import { Options, Dialect, Logging } from "sequelize";
+import { Options, Dialect } from "sequelize";
 const DB_NAME = <string>process.env.DB_NAME;
 const DB_PASSWORD = <string>process.env.DB_PASSWORD;
 const DB_HOST = <string>process.env.DB_HOST;
@@ -23,16 +23,10 @@ const dbOptions: Options = {
   },
   logging: (sql) => {
     console.log(
-<<<<<<< HEAD
       `📘[Sequelize]
-  ㄴ${msg[0]}`
-    ),
-=======
-      `📘[Sequelize] 
   ㄴ${sql}`
     );
   },
->>>>>>> b66fa5fe5e5e659e4544873358fa75c26982603a
 };
 
 export { DB_NAME, DB_PASSWORD, DB_USER, dbOptions };

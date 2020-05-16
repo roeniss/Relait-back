@@ -1,12 +1,11 @@
-import * as express from "express";
+import express from "express";
 import * as AuthController from "../controller/auth";
-import { hasValidLoginBody, isValidUser } from "../middlewares/vaildation";
-import moment from "moment-timezone";
-moment.tz.setDefault("Asia/Seoul");
+import { validators } from "../middlewares";
 
+const { isValidLoginBody, isValidUser } = validators;
 const router: express.Router = express.Router();
 
-router.post("/login", hasValidLoginBody, AuthController.login);
+router.post("/login", isValidLoginBody, AuthController.login);
 
 // ----------------- below: for debug
 router.delete("/", isValidUser, AuthController.deleteUser);

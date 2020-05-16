@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { Seat } from "../db";
 import {
   Op,
@@ -8,7 +8,7 @@ import {
   DestroyOptions,
   RestoreOptions,
 } from "sequelize";
-import { dateWithOffset } from "../lib/offsetTime";
+import { offsetTime } from "../lib";
 
 //-------------------------
 //    Constants (policy)
@@ -82,7 +82,7 @@ export const getStatus = async (
     const seat = await Seat.findOne(options);
 
     if (seat) return res.status(200).json(seat);
-    else res.sendStatus(204);
+    else return res.sendStatus(204);
   } catch (error) {
     return res.sendStatus(500);
   }
@@ -142,7 +142,7 @@ export const createSeat = async (
       descriptionSeat,
       descriptionCloseTime,
     };
-    const newSeat = await Seat.create(values);
+    await Seat.create(values);
     return res.sendStatus(201);
   } catch (e) {
     if (e instanceof ValidationError) return res.sendStatus(422);
@@ -219,7 +219,7 @@ export const updateSeat = async (
       limit: 1,
     };
 
-    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    const [updatedCnt /* _updatedSeats */] = await Seat.update(values, options);
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
@@ -239,25 +239,26 @@ export const deleteSeat = async (
 ) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
-  try {
-    try {
-      const options: FindOptions = {
-        where: { id: seatId },
-      };
-      const seat = await Seat.findOne(options);
-      if (!seat) {
-        return res.sendStatus(404);
-      } else if (
-        !seat.isGivenBy(userId) ||
-        !seat.isTakenBy(null) ||
-        seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE
-      ) {
-        return res.sendStatus(403);
-      }
-    } catch (e) {
-      return res.sendStatus(500);
-    }
 
+  try {
+    const options: FindOptions = {
+      where: { id: seatId },
+    };
+    const seat = await Seat.findOne(options);
+    if (!seat) {
+      return res.sendStatus(404);
+    } else if (
+      !seat.isGivenBy(userId) ||
+      !seat.isTakenBy(null) ||
+      seat.leftMinuteToLeave() < UPDATE_ALLOW_MINUTE
+    ) {
+      return res.sendStatus(403);
+    }
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+
+  try {
     const options: DestroyOptions = {
       where: {
         id: seatId,
@@ -269,7 +270,7 @@ export const deleteSeat = async (
     };
 
     const deletedCnt = await Seat.destroy(options);
-    if (deletedCnt === 0) res.sendStatus(403);
+    if (deletedCnt === 0) return res.sendStatus(403);
     else return res.sendStatus(204);
   } catch (e) {
     return res.sendStatus(500);
@@ -304,7 +305,7 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
   }
 
   try {
-    const timeNow = dateWithOffset(0);
+    const timeNow = offsetTime(0);
     const values: Partial<Seat> = {
       takerId: userId,
       takenAt: timeNow,
@@ -319,7 +320,7 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
       limit: 1,
     };
 
-    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    const [updatedCnt /* _updatedSeats */] = await Seat.update(values, options);
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
@@ -370,7 +371,7 @@ export const cancelTakeSeat = async (
       limit: 1,
     };
 
-    const [updatedCnt, _updatedSeats] = await Seat.update(values, options);
+    const [updatedCnt /* _updatedSeats */] = await Seat.update(values, options);
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {

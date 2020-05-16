@@ -10,28 +10,22 @@ import {
   HasManyCountAssociationsMixin,
   HasManyCreateAssociationMixin,
   Association,
-  Options,
-  FindOptions,
   Order,
   WhereOperators,
   Op,
 } from "sequelize";
-import * as dbConfig from "./config";
-import { dateWithOffset } from "../lib/offsetTime";
-
-//-------------------------
-//    Initialize Sequelize
-//-------------------------
+import { DB_NAME, DB_USER, DB_PASSWORD, dbOptions } from "./config";
+import { offsetTime } from "../lib";
 
 //-------------------------
 //    Initialize Sequelize
 //-------------------------
 
 export const sequelize: Sequelize = new Sequelize(
-  dbConfig.DB_NAME,
-  dbConfig.DB_USER,
-  dbConfig.DB_PASSWORD,
-  <Options>dbConfig.dbOptions
+  DB_NAME,
+  DB_USER,
+  DB_PASSWORD,
+  dbOptions
 );
 
 //-------------------------
@@ -201,7 +195,7 @@ export class Seat extends Model {
   }
 
   public static whereLaterThan(minute: number): WhereOperators {
-    return { [Op.gte]: dateWithOffset(minute) };
+    return { [Op.gte]: offsetTime(minute) };
   }
 
   public isTakenBy(id: string | number | null): boolean {
@@ -213,7 +207,7 @@ export class Seat extends Model {
   }
 
   public leftMinuteToLeave(): number {
-    const currentDate = dateWithOffset(0);
+    const currentDate = offsetTime(0);
     return Math.floor(
       (currentDate.getTime() - this.leaveAt.getTime()) / (1000 * 60)
     );

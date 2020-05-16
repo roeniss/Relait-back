@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import AuthRouter from "./AuthRouter";
 import SeatRouter from "./SeatRouter";
 
