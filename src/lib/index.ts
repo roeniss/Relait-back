@@ -7,3 +7,5 @@ export { InvalidTokenType, EmptyTokenValue };
 
 import { offsetTime, moment } from "./offsetTime";
 export { offsetTime, moment };
+
+export { default as checkEnvs } from "./checkEnvs";
