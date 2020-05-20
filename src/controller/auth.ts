@@ -23,8 +23,8 @@ export const login = async (req: express.Request, res: express.Response) => {
     res.setHeader("authorization", JWT);
     const statusCode = created ? 201 : 200;
     return res.sendStatus(statusCode);
-  } catch (error) {
-    return res.sendStatus(500);
+  } catch (e) {
+    throw e;
   }
 };
 
@@ -50,6 +50,6 @@ export const deleteUser = async (
     if (deletedNum === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
