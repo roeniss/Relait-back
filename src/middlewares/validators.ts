@@ -7,7 +7,7 @@ const isValidLoginBody = (
   next: express.NextFunction
 ): express.Response | void => {
   const { uniqueId, vender } = req.body;
-  if (!_isAllDefined([uniqueId, vender])) {
+  if (!isAllDefined([uniqueId, vender])) {
     return res.sendStatus(422);
   }
   return next();
@@ -19,8 +19,8 @@ const isValidUser = (
   next: express.NextFunction
 ): express.Response | void => {
   const { authorization } = req.headers;
-  if (!_isAllDefined(authorization)) {
-    return res.sendStatus(401);
+  if (!isAllDefined(authorization)) {
+    res.sendStatus(401);
   }
 
   try {
@@ -43,7 +43,7 @@ const isValidUser = (
 
 export default { isValidLoginBody, isValidUser };
 
-const _isAllDefined = (values: any[] | string | undefined) => {
+const isAllDefined = (values: any[] | string | undefined) => {
   if (values === undefined) return undefined;
   if (typeof values === "string") return values !== undefined;
   return values.every((a) => a !== undefined);

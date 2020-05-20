@@ -1,8 +1,38 @@
 import "../env";
-import { checkEnvs } from "./lib";
-checkEnvs();
 import app from "./App";
 import { moment } from "./lib";
+
+// -----------------------------
+//  check env variables
+// -----------------------------
+const _checkEnvVars = () => {
+  const {
+    DB_NAME,
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    DB_DIALECT,
+    JWT_EXPIRE,
+    JWT_SECRET,
+  } = process.env;
+
+  [
+    DB_NAME,
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    DB_DIALECT,
+    JWT_EXPIRE,
+    JWT_SECRET,
+  ].forEach((envVal) => {
+    if (!envVal) {
+      console.error(`${envVal} should be specified`);
+      process.exit(1);
+    }
+  });
+};
+
+_checkEnvVars();
 
 // -----------------------------
 //  init server
