@@ -6,8 +6,8 @@ const isValidLoginBody = (
   res: express.Response,
   next: express.NextFunction
 ): express.Response | void => {
-  const { uniqueId, vender } = req.body;
-  if (!_isAllDefined([uniqueId, vender])) {
+  const { uniqueId /* , vendor */ } = req.body; // vendor: optional
+  if (!_isAllDefined([uniqueId /* , vendor */])) {
     return res.sendStatus(422);
   }
   return next();
