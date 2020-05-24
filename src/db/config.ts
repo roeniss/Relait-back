@@ -5,7 +5,14 @@ const DB_HOST = <string>process.env.DB_HOST;
 const DB_DIALECT = <Dialect>process.env.DB_DIALECT;
 const DB_USER = <string>process.env.DB_USER;
 
-const options: Options = {
+if (
+  ![DB_NAME, DB_PASSWORD, DB_HOST, DB_DIALECT, DB_USER].every((v) => Boolean(v))
+) {
+  console.error("please fill in environment values for DB");
+  process.exit(1);
+}
+
+const dbOptions: Options = {
   host: DB_HOST,
   dialect: DB_DIALECT,
   pool: {
@@ -22,4 +29,4 @@ const options: Options = {
   },
 };
 
-export { DB_NAME, DB_PASSWORD, DB_USER, options };
+export { DB_NAME, DB_PASSWORD, DB_USER, dbOptions };

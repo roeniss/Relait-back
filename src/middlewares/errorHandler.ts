@@ -4,8 +4,7 @@ import { isProduction } from "../lib";
 const errorHandler = (
   err: Error,
   _req: express.Request,
-  res: express.Response,
-  _next: express.NextFunction
+  res: express.Response
 ): express.Response => {
   const errorMsg = interpretError(err);
   console.error(`Server Error: ${errorMsg}`);
