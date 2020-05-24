@@ -42,7 +42,8 @@ export const login = async (
 //
 export const deleteUser = async (
   _req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   const { id } = res.locals;
   const options: DestroyOptions = {
@@ -55,6 +56,6 @@ export const deleteUser = async (
     if (deletedNum === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (e) {
-    throw e;
+    return next(e);
   }
 };
