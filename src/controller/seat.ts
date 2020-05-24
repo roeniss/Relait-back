@@ -41,7 +41,7 @@ export const getSeats = async (req: express.Request, res: express.Response) => {
 
     return res.status(200).json({ seats });
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -58,7 +58,7 @@ export const getSeat = async (req: express.Request, res: express.Response) => {
     if (seat) return res.status(200).json(seat);
     return res.sendStatus(404);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -83,8 +83,8 @@ export const getStatus = async (
 
     if (seat) return res.status(200).json(seat);
     else return res.sendStatus(204);
-  } catch (error) {
-    return res.sendStatus(500);
+  } catch (e) {
+    throw e;
   }
 };
 
@@ -109,7 +109,7 @@ export const createSeat = async (
     const seat = await Seat.findOne(options);
     if (seat) return res.sendStatus(403);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 
   try {
@@ -146,7 +146,7 @@ export const createSeat = async (
     return res.sendStatus(201);
   } catch (e) {
     if (e instanceof ValidationError) return res.sendStatus(422);
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -177,7 +177,7 @@ export const updateSeat = async (
       return res.sendStatus(403);
     }
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 
   try {
@@ -223,7 +223,7 @@ export const updateSeat = async (
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -255,7 +255,7 @@ export const deleteSeat = async (
       return res.sendStatus(403);
     }
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 
   try {
@@ -273,7 +273,7 @@ export const deleteSeat = async (
     if (deletedCnt === 0) return res.sendStatus(403);
     else return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -301,7 +301,7 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
       return res.sendStatus(403);
     }
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 
   try {
@@ -324,7 +324,7 @@ export const takeSeat = async (req: express.Request, res: express.Response) => {
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -354,7 +354,7 @@ export const cancelTakeSeat = async (
       return res.sendStatus(403);
     }
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 
   try {
@@ -375,7 +375,7 @@ export const cancelTakeSeat = async (
     if (updatedCnt === 0) return res.sendStatus(403);
     return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
 
@@ -410,6 +410,6 @@ export const restoreSeat = async (
     await Seat.restore(options);
     return res.sendStatus(204);
   } catch (e) {
-    return res.sendStatus(500);
+    throw e;
   }
 };
