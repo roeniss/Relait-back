@@ -1,0 +1,26 @@
+name: CD
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy:
+    name: update dev server code and pm2
+    runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        node-version: [12.16.x]
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ec2-user
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            sudo -i
+            cd /root/relait-back
+            git pull
+            npm i
