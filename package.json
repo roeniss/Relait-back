@@ -31,6 +31,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@sentry/typescript": "^5.17.0",
     "@types/app-root-path": "^1.2.4",
     "@types/bluebird": "^3.5.30",
     "@types/cors": "^2.8.6",
@@ -60,6 +61,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "@sentry/node": "^5.16.1",
     "cors": "^2.8.5",
     "cross-env": "^7.0.0",
     "dotenv": "^8.2.0",

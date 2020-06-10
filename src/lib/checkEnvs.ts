@@ -10,6 +10,7 @@ function checkEnvs() {
     DB_DIALECT,
     JWT_EXPIRE,
     JWT_SECRET,
+    SENTRY_URL,
   } = process.env;
   Object.entries({
     DB_NAME,
@@ -19,6 +20,7 @@ function checkEnvs() {
     DB_DIALECT,
     JWT_EXPIRE,
     JWT_SECRET,
+    SENTRY_URL,
   }).forEach(([key, value]) => {
     if (!value) {
       console.error(`${key} should be specified`);
