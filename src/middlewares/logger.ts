@@ -1,6 +1,6 @@
 import express from "express";
 import morgan from "morgan";
-import rfs from "rotating-file-stream";
+import rfs, { createStream } from "rotating-file-stream";
 import path from "path";
 import { isProduction } from "../lib";
 
@@ -13,7 +13,7 @@ const logger = (): express.RequestHandler => {
       interval: "1d", // rotate cycle
       compress: "gzip", // compress rotated files
     };
-    const stream: rfs.RotatingFileStream = rfs.createStream(
+    const stream: rfs.RotatingFileStream = createStream(
       LOG_PATH,
       loggerOptions
     );
