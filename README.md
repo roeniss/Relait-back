@@ -1,6 +1,6 @@
 # Relait Backend API
 
-[루비콘](https://lubycon.github.io/)의 멘토링 프로그램에서 탄생한 사이드 프로젝트, <Relait>의 백엔드 레포지토리입니다.
+[루비콘](https://lubycon.github.io/)의 멘토링 프로그램에서 탄생한 사이드 프로젝트, \<Relait\>의 백엔드 레포지토리입니다.
 
 ## Relait?
 
