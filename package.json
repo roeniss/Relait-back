@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test jest --watchAll --silent --runInBand --detectOpenHandles",
-    "start": "cross-env NODE_ENV=local nodemon --delay 0 --watch src --delay 1 --exec 'ts-node' src/www.ts",
-    "start:dev": "pm2 delete --silent API & cross-env NODE_ENV=development pm2 start ./node_modules/.bin/ts-node --name API -e ./log/pm2.error.log -o ./log/pm2.out.log --log-date-format 'YYYY-MM-DD HH:mm Z' -- src/www.ts ",
+    "start": "cross-env NODE_ENV=production nodemon --delay 0 --watch src --delay 1 --exec 'ts-node' src/www.ts",
+    "start:dev": "pm2 start ecosystem.config.js --env development",
+    "start:prod": "pm2 start ecosystem.config.js --env production",
     "build": "webpack --config webpack.config.js"
   },
   "jest": {
@@ -72,7 +73,7 @@
     "morgan": "^1.9.1",
     "mysql2": "^2.1.0",
     "node-fetch": "^2.6.0",
-    "rotating-file-stream": "^2.0.2",
+    "rotating-file-stream": "^2.1.1",
     "sequelize": "^5.21.5",
     "yamljs": "^0.3.0"
   }
