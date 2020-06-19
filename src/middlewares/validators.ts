@@ -19,8 +19,8 @@ const isValidUser = (
   next: express.NextFunction
 ): express.Response | void => {
   const { authorization } = req.headers;
-  if (!_isAllDefined(authorization)) {
-    return res.sendStatus(401);
+  if (!isAllDefined(authorization)) {
+    res.sendStatus(401);
   }
 
   try {

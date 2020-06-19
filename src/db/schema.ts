@@ -14,7 +14,7 @@ import {
   WhereOperators,
   Op,
 } from "sequelize";
-import { DB_NAME, DB_USER, DB_PASSWORD, options } from "./config";
+import { DB_NAME, DB_USER, DB_PASSWORD, dbOptions } from "./config";
 import { offsetTime } from "../lib";
 
 //-------------------------
@@ -25,7 +25,7 @@ export const sequelize: Sequelize = new Sequelize(
   DB_NAME,
   DB_USER,
   DB_PASSWORD,
-  options
+  dbOptions
 );
 
 //-------------------------
@@ -200,11 +200,11 @@ export class Seat extends Model {
   }
 
   public isTakenBy(id: string | number | null): boolean {
-    return id ? this.takerId === Number(id) : this.takerId !== null;
+    return id ? this.takerId === Number(id) : this.takerId === null;
   }
 
   public isGivenBy(id: string | number | null): boolean {
-    return id ? this.giverId === Number(id) : this.giverId !== null;
+    return id ? this.giverId === Number(id) : this.giverId === null;
   }
 
   public leftMinuteToLeave(): number {
