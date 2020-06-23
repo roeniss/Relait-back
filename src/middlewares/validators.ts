@@ -1,11 +1,7 @@
 import * as express from "express";
 import { jwtOperator } from "../lib";
 
-const isValidLoginBody = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-): express.Response | void => {
+const isValidLoginBody: express.RequestHandler = (req, res, next) => {
   const { uniqueId /* , vendor */ } = req.body; // vendor: optional
   if (!_isAllDefined([uniqueId /* , vendor */])) {
     return res.sendStatus(422);
@@ -13,11 +9,7 @@ const isValidLoginBody = (
   return next();
 };
 
-const isValidUser = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-): express.Response | void => {
+const isValidUser: express.RequestHandler = (req, res, next) => {
   const { authorization } = req.headers;
   if (!_isAllDefined(authorization)) {
     res.sendStatus(401);

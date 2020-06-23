@@ -8,11 +8,7 @@ import { FindOrCreateOptions, DestroyOptions, WhereOptions } from "sequelize";
 // (2) add token to headers
 // (3) return response to client
 //
-export const login = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const login: express.RequestHandler = async (req, res, next) => {
   const { vendor, uniqueId } = req.body;
   const whereOptions: WhereOptions & Partial<User> = {
     uniqueId,

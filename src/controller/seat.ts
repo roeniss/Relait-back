@@ -24,11 +24,7 @@ const UPDATE_ALLOW_MINUTE = 10; // scale : minute
 // Get all alive seats.
 // 200: OK
 //
-export const getSeats = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const getSeats: express.RequestHandler = async (req, res, next) => {
   const { page, lat, lng } = req.query;
   const [offset, limit] = _getOffsetLimit(page);
   try {
@@ -54,11 +50,7 @@ export const getSeats = async (
 // 200: OK
 // 404: Not found
 //
-export const getSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const getSeat: express.RequestHandler = async (req, res, next) => {
   const id = req.params.id;
   try {
     const seat = await Seat.findByPk(id);
@@ -103,11 +95,7 @@ export const getStatus = async (
 // 403: Forbidden (you have some alive seat)
 // 422: Unprocessable Entity (lack of essential columns)
 //
-export const createSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const createSeat: express.RequestHandler = async (req, res, next) => {
   const { id } = res.locals; // userId
   try {
     const options: FindOptions = {
@@ -161,16 +149,11 @@ export const createSeat = async (
 };
 
 //
-// Update a Seat. Only alive && not taken seat can be deleted.
-// 204: No content (updated well, even nothing's changed)
+// Update a Seat. Only alive && not taken seat can be del  req,   res,   next
 // 403: Forbidden (can't update this seat)
 // 404: Not found (no such seat)
 //
-export const updateSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const updateSeat: express.RequestHandler = async (req, res, next) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
   try {
@@ -244,11 +227,7 @@ export const updateSeat = async (
 // 403: Forbidden (can't delete this seat)
 // 404: Not found (no such seat)
 //
-export const deleteSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const deleteSeat: express.RequestHandler = async (req, res, next) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
 
@@ -295,11 +274,7 @@ export const deleteSeat = async (
 // 403: Forbidden (can't take this seat -- e.g. taken by someone else)
 // 404: Not found (no such seat)
 //
-export const takeSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const takeSeat: express.RequestHandler = async (req, res, next) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
   try {
@@ -350,10 +325,10 @@ export const takeSeat = async (
 // 403: Forbidden (can't take this seat -- e.g. taken by someone else)
 // 404: Not found (no such seat)
 //
-export const cancelTakeSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
+export const cancelTakeSeat: express.RequestHandler = async (
+  req,
+  res,
+  next
 ) => {
   const userId = res.locals.id;
   const seatId = req.params.id;
@@ -415,11 +390,7 @@ const _getOffsetLimit = (page: string | undefined): [number, number] => {
 // this methoid just update 'deletedAt' column to NULL.
 // 204: No content (no error found)
 //
-export const restoreSeat = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
+export const restoreSeat: express.RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const options: RestoreOptions = {

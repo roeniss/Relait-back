@@ -1,12 +1,7 @@
 import * as express from "express";
 import { isProduction } from "../lib";
 
-const errorHandler = (
-  err: Error,
-  _req: express.Request,
-  res: express.Response,
-  _next: express.NextFunction
-): express.Response => {
+const errorHandler: express.ErrorRequestHandler = (err, _req, res, _next) => {
   const errorMsg = interpretError(err);
   console.error(`Server Error: ${errorMsg}`);
 
