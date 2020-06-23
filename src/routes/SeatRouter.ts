@@ -20,4 +20,9 @@ router.delete("/take/:id", isValidUser, SeatController.cancelTakeSeat);
 // ----------------- below: for debug
 router.post("/restore/:id", SeatController.restoreSeat);
 
+// URL : Not Found
+router.use((_req, res, _next) => {
+  res.sendStatus(404);
+});
+
 export default router;
