@@ -29,6 +29,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: 22
           script: |
+            sudo su
             cd /home/ec2-user/relait-back
             sudo git checkout master
             sudo git pull
