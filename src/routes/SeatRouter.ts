@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import { validators } from "../middlewares";
 import * as SeatController from "../controller/seat";
 

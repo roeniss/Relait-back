@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import { User } from "../db";
 import { jwtOperator } from "../lib";
 import { FindOrCreateOptions, DestroyOptions, WhereOptions } from "sequelize";

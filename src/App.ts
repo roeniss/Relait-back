@@ -1,6 +1,6 @@
-import express from "express";
+import * as express from "express";
 import * as Sentry from "@sentry/node";
-import cors from "cors";
+import * as cors from "cors";
 import { errorHandler, logger, swagger } from "./middlewares";
 import routers from "./routes";
 

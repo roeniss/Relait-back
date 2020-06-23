@@ -1,4 +1,4 @@
-import moment from "moment-timezone";
+import * as moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
 const offsetTime = (minutes: number): Date => {

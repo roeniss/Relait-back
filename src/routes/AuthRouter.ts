@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import * as AuthController from "../controller/auth";
 import { validators } from "../middlewares";
 

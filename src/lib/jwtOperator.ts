@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import { User } from "../db";
 import { InvalidTokenType, EmptyTokenValue } from "./errorTypes";
 
