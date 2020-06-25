@@ -1,6 +1,6 @@
-import express from "express";
-import swaggerUi from "swagger-ui-express";
-import path from "path";
+import * as express from "express";
+import * as swaggerUi from "swagger-ui-express";
+import * as path from "path";
 import { load } from "yamljs";
 
 const SWAGGER_FILENAME = "./swagger.yaml";

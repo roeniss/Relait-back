@@ -1,7 +1,7 @@
-import express from "express";
-import morgan from "morgan";
-import rfs from "rotating-file-stream";
-import path from "path";
+import * as express from "express";
+import * as morgan from "morgan";
+import * as rfs from "rotating-file-stream";
+import * as path from "path";
 import { isProduction } from "../lib";
 
 const LOG_PATH = path.join(__dirname, "../../", "log", "server.log");

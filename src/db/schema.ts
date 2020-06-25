@@ -35,7 +35,7 @@ export const sequelize: Sequelize = new Sequelize(
 export class User extends Model {
   public id!: number;
 
-  public vender!: number;
+  public vendor!: number;
   public uniqueId!: string;
   public userStatus!: number;
 
@@ -56,9 +56,10 @@ export class User extends Model {
 
   public static initialize(sequelize: Sequelize) {
     const modelAttributes: ModelAttributes = {
-      vender: {
+      vendor: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        defaultValue: 1,
       },
       uniqueId: {
         type: DataTypes.STRING,

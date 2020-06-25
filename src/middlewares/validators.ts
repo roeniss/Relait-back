@@ -1,25 +1,17 @@
-import express from "express";
+import * as express from "express";
 import { jwtOperator } from "../lib";
 
-const isValidLoginBody = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-): express.Response | void => {
-  const { uniqueId, vender } = req.body;
-  if (!isAllDefined([uniqueId, vender])) {
+const isValidLoginBody: express.RequestHandler = (req, res, next) => {
+  const { uniqueId /* , vendor */ } = req.body; // vendor: optional
+  if (!_isAllDefined([uniqueId /* , vendor */])) {
     return res.sendStatus(422);
   }
   return next();
 };
 
-const isValidUser = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-): express.Response | void => {
+const isValidUser: express.RequestHandler = (req, res, next) => {
   const { authorization } = req.headers;
-  if (!isAllDefined(authorization)) {
+  if (!_isAllDefined(authorization)) {
     res.sendStatus(401);
   }
 
@@ -43,7 +35,7 @@ const isValidUser = (
 
 export default { isValidLoginBody, isValidUser };
 
-const isAllDefined = (values: any[] | string | undefined) => {
+const _isAllDefined = (values: any[] | string | undefined) => {
   if (values === undefined) return undefined;
   if (typeof values === "string") return values !== undefined;
   return values.every((a) => a !== undefined);

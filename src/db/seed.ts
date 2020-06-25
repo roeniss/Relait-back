@@ -7,7 +7,7 @@ import { moment } from "../lib";
 export const userSeed: Partial<User>[] = [];
 for (let i = 1; i <= 20; i++) {
   const user: Partial<User> = {
-    vender: 1,
+    vendor: 1,
     uniqueId: i.toString(),
   };
 

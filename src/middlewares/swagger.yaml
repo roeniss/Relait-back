@@ -311,12 +311,14 @@ components:
       properties:
         uniqueId:
           type: "string"
+          required: true
           example: "5124123213"
           description: "특정 소셜 플랫폼의 고유 ID"
         vendor:
           type: "string"
+          required: false
           example: "1"
-          description: "특정 소셜 플랫폼의 일련번호 (현재 카카오만 지원)"
+          description: "특정 소셜 플랫폼의 일련번호 (default : 1 (kakao))"
     Seat:
       type: "object"
       properties:
