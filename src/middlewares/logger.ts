@@ -8,7 +8,7 @@ const LOG_PATH = path.join(__dirname, "../../", "log");
 const LOG_FILE_SUFFIX = "server.log";
 
 const logger = (): express.RequestHandler => {
-  if (!isProduction()) {
+  if (isProduction()) {
     const loggerOptions: rfs.Options = {
       size: "10M", // rotate threshold
       interval: "1d", // rotate cycle
