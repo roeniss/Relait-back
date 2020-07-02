@@ -12,7 +12,7 @@ const isValidLoginBody: express.RequestHandler = (req, res, next) => {
 const isValidUser: express.RequestHandler = (req, res, next) => {
   const { authorization } = req.headers;
   if (!_isAllDefined(authorization)) {
-    res.sendStatus(401);
+    return res.sendStatus(401);
   }
 
   try {
