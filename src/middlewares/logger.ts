@@ -4,17 +4,18 @@ import * as rfs from "rotating-file-stream";
 import * as path from "path";
 import { isProduction } from "../lib";
 
-const LOG_PATH = path.join(__dirname, "../../", "log", "server.log");
+const LOG_PATH = path.join(__dirname, "../../", "log");
+const LOG_FILE_SUFFIX = "server.log";
 
 const logger = (): express.RequestHandler => {
-  if (isProduction()) {
+  if (!isProduction()) {
     const loggerOptions: rfs.Options = {
       size: "10M", // rotate threshold
       interval: "1d", // rotate cycle
-      compress: "gzip", // compress rotated files
+      path: LOG_PATH,
     };
     const stream: rfs.RotatingFileStream = rfs.createStream(
-      LOG_PATH,
+      LOG_FILE_SUFFIX,
       loggerOptions
     );
     return morgan("short", { stream });
