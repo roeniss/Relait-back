@@ -11,7 +11,9 @@ const app = express();
 //  Middlewares
 // --------------------
 Sentry.init({ dsn: process.env.SENTRY_URL });
-app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
+if (isProduction()) {
+  app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
+}
 app.use(logger());
 app.use(cors());
 app.use(express.json());
