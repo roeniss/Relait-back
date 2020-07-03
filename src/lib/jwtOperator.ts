@@ -1,6 +1,7 @@
 import * as jwt from "jsonwebtoken";
 import { User } from "../db";
 import { InvalidTokenType, EmptyTokenValue } from "./errorTypes";
+import { Jwt } from "../../@types/JWT";
 
 // Possible error types:
 // jwt : JsonWebTokenError, NotBeforeError, TokenExpiredError;
@@ -15,7 +16,7 @@ const decryptBearerToken = (token: string) => {
   }
 };
 
-const encryptBearerToken = (user: User) => {
+const encryptBearerToken = (user: User): Jwt => {
   const payload: Partial<User> = {
     id: user.id,
     userStatus: user.userStatus,
@@ -25,8 +26,7 @@ const encryptBearerToken = (user: User) => {
   const options: jwt.SignOptions = {
     expiresIn: JWT_EXPIRE,
   };
-  const token = jwt.sign(payload, JWT_SECRET, options);
-  return `Bearer ${token}`;
+  return { token: jwt.sign(payload, JWT_SECRET, options) };
 };
 
 export default { decryptBearerToken, encryptBearerToken };
