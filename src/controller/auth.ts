@@ -2,7 +2,7 @@ import * as express from "express";
 import { User } from "../db";
 import { jwtOperator } from "../lib";
 import { FindOrCreateOptions, DestroyOptions, WhereOptions } from "sequelize";
-import { Jwt } from "../../@types/JWT";
+import { JWTPayload } from "../../@types/JwtPayload";
 
 //
 // (1) login || signup
@@ -21,7 +21,7 @@ export const login: express.RequestHandler = async (req, res, next) => {
   };
   try {
     const [user, created] = await User.findOrCreate(condition);
-    const token: Jwt = jwtOperator.encryptBearerToken(user);
+    const token: JWTPayload = jwtOperator.encryptBearerToken(user);
     // res.setHeader("authorization", JWT);
     const statusCode = created ? 201 : 200;
     return res.status(statusCode).json(token);
