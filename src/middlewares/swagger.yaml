@@ -57,7 +57,7 @@ paths:
       description: "현재 로그인한 유저의 정보를 삭제합니다 for debugging (카카오 인증 정보는 삭제하지 않고, 릴레잇 DB에서만 삭제합니다. 바꿔말하자면 카카오 DB에는 계정 정보가 남아있습니다)"
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
 
       responses:
         204:
@@ -78,7 +78,7 @@ paths:
       description: "take 가능한 seat들의 배열을 받아옵니다. 최대 20개 가져오며 page 값을 이용해 오프셋을 조절합니다."
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: query
           name: page
           required: false
@@ -112,7 +112,7 @@ paths:
       description: "seat 하나를 생성합니다."
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
       requestBody:
         required: true
         content:
@@ -159,7 +159,7 @@ paths:
       description: "해당 id의 seat 정보를 가져옵니다"
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: path
           name: seatId
           schema:
@@ -188,7 +188,7 @@ paths:
       description: "해당 id의 seat 정보를 수정합니다."
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: path
           name: seatId
           schema:
@@ -219,7 +219,7 @@ paths:
       description: "해당 id의 seat를 삭제합니다."
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: path
           name: seatId
           schema:
@@ -245,7 +245,7 @@ paths:
       description: "해당 id의 seat의 taker가 됩니다"
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: path
           name: seatId
           schema:
@@ -270,7 +270,7 @@ paths:
       description: "해당 id의 seat의 taker 상태를 해제합니다"
 
       parameters:
-        - $ref: "#/components/parameters/authentificate"
+        - $ref: "#/components/parameters/authorization"
         - in: path
           name: seatId
           schema:
@@ -413,9 +413,9 @@ components:
           example: "1587550606"
 
   parameters:
-    authentificate:
+    authorization:
       in: header
-      name: "authentificate"
+      name: "authorization"
       schema:
         type: string
       required: true
